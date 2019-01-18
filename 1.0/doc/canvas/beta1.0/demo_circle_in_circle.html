@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ExplorerCanvas Example 1</title>
+<script type="text/javascript" src="../jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/canvas.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
+<script type="text/javascript" src="js/canvas2image.js"></script>
+<!--[if IE]><script type="text/javascript" src="js/excanvas_r73.js"></script><![endif]-->
+
+<script type="text/javascript"> 
+var D;
+var animate;
+var i=1;
+var step=0;
+var pi=Math.PI/180;
+var BR=240;
+var SR=80;
+var IR=3;
+var pi2=pi*(IR-1);
+var PNUM=1;
+$(function(){
+	document.getElementById('cv').width=500;
+	document.getElementById('cv').height=500;
+	document.getElementById('cv2').width=500;
+	document.getElementById('cv2').height=500;
+	$('#cv').css({'margin-left':'-500px'});
+	D=new canvas('cv');
+	D2=new canvas('cv2');
+	drawZB();
+	//graphics();
+	//graphics();
+	//graphics();
+	animate=setInterval("graphics()",step);
+	
+	$("input").click(function(){
+		switch(this.value){
+			case '暂 停':
+				this.value='继 续';
+				clearInterval(animate);
+			break;
+			case '继 续':
+				this.value='暂 停';
+				animate=setInterval("graphics()",step);
+			break;
+			case '清 空':
+				D.clear();
+				drawZB();
+			break;
+			case '保 存':
+				graphics();
+				//Canvas2Image.saveAsPNG(D.cvs);
+			break;
+			case '随 机':
+				i=0;
+				BR=parseInt(Math.random()*200)+50;
+				BR=(BR==0?250:BR);
+				SR=parseInt(Math.random()*BR);
+				SR=(SR==0?25:SR);
+				$('#R').val(BR);
+				$('#r').val(SR);
+				IR=BR/SR;
+				pi2=pi*(IR-1);
+				D.clear();
+				D.tmpx=null;
+				drawZB();
+			break;	
+			case '设 置':
+				i=0;
+				BR=parseFloat($('#R').val());
+				SR=parseFloat($('#r').val());
+				IR=BR/SR;
+				pi2=pi*(IR-1);
+				D.clear();
+				D.tmpx=null;
+				drawZB();
+			break;
+			case '增加画笔':
+				PNUM=(PNUM>10)?10:++PNUM;
+				D.clear();
+				drawZB();
+			break;
+			case '减少画笔':
+				PNUM=(PNUM>1)?(--PNUM):1;
+				D.clear();
+				drawZB();
+			break;
+		}
+	});
+	
+});
+
+function graphics(){
+	//D.clear();
+	
+	//if(i%50==0) D.log('BR:'+BR+',SR:'+SR+',pi2:'+pi2+',IR:'+IR);
+	//D.set({strokeStyle:"#f00",fillStyle:"#f00"});
+	//drawTL(250,250,200,false);
+	var x0=Math.cos(i*pi);
+	var y0=Math.sin(i*pi);
+	var x1=(BR-SR)*x0;
+	var y1=(BR-SR)*y0;
+	//var x0_c=Math.cos((i-180)*pi);
+	//var y0_c=Math.sin((i-180)*pi);
+	//var x1_c=(BR-SR)*x0_c;
+	//var y1_c=(BR-SR)*y0_c;
+	
+	var x0_1=Math.cos(i*pi2);
+	var y0_1=Math.sin(i*pi2);
+	
+	//var m1=Math.cos(i*pi2)*x0*BR;
+	//var m2=Math.sin(i*pi2)*y0*BR;
+	
+	
+	//D.set({strokeStyle:"#fff",fillStyle:"#fff"});
+	//drawTL(250+x1,250+y1,SR-1,true);
+	//var circle="rgb("+(i%255)+","+(255-i%255)+","+(Math.abs(255-i)%255)+")";
+	//D.set({strokeStyle:circle,fillStyle:circle});
+	D.set({strokeStyle:"#fff",fillStyle:"#fff"});
+	var PNUM_P=SR/(PNUM+1);
+	
+	var x2=(SR-1)*y0_1;
+	var y2=(SR-1)*x0_1;
+	if(!!D.tmpx){
+		D.line(D.tmpx.x,D.tmpx.y,x1+x2+250,y1+y2+250);
+	}
+	D.tmpx={x:x1+x2+250,y:y1+y2+250};
+	
+	/*
+	for(var p=0; p<PNUM;p++){
+		var x2=(SR-PNUM_P*(p+1))*y0_1;
+		var y2=(SR-PNUM_P*(p+1))*x0_1;
+		//x2+=x2;
+		//y2+=y2;
+		D.circle(250+x1+x2,250+y1+y2,parseInt(5/PNUM)+1,false);
+	}
+	*/
+	/*
+	var x3=100*Math.cos(i*pi)+100*(1/IR)*Math.cos(IR*i*pi);
+	var y3=100*Math.sin(i*pi)-100*(1/IR)*Math.sin(IR*i*pi);
+	var circle="rgb("+(i%255)+","+(255-i%255)+","+(Math.abs(255-i)%255)+")";
+	D.set({strokeStyle:circle,fillStyle:circle});
+	D.circle(250+x3,250+y3,H,true);
+	*/
+	//D.display();
+	
+	D2.clear();
+	D2.set({strokeStyle:"rgb(200,0,0)",fillStyle:"rgb(200,0,0)"});
+	drawTL(250+x1,250+y1,SR,true);
+	drawTL(250+x1,250+y1,SR-20,true);
+	/*D2.set({strokeStyle:"rgb(200,0,0)",fillStyle:"rgb(200,0,0)"});
+	drawTL(250+x1,250+y1,SR-22,true);
+	drawTL(250+x1,250+y1,SR-40,true);*/
+	i++; 
+}
+function drawZB(){
+	D.set({strokeStyle:"#fff",fillStyle:"#fff"});
+	D.text("内摆线（圆内螺线）曲线演示",10,15);
+	/*
+	for(var x=0;x<Math.PI*2;x+=Math.PI*2/8){
+		var x1=250*Math.cos(x);
+		var y1=250*Math.sin(x);
+		D.line()
+		//var y1=200*Math.sin(x)-200*(1/110)*Math.sin(110*x);
+		//var x1=200*Math.cos(x)+200*(1/110)*Math.cos(110*x);
+		//var y1=200*Math.sin(x)-200*(1/110)*Math.sin(110*x);
+		//D.circle(250+x1,250+y1,4,true);
+		//D.text((x*180/Math.PI).toFixed(0),250+x1,250+y1);
+	}
+	*/
+	
+	//D.circle(250,250,200,false);
+	drawTL(250,250,BR,false);
+}
+function drawTL(sx,sy,tr,noCacheData){
+	var points=[];
+	var step=5;
+	var C=2*Math.PI*tr;
+	var fix=parseInt(C/(4*step));
+	for(var x=0;x<Math.PI*2;x+=Math.PI*2/fix){
+		if(!noCacheData){
+			var x1=tr*Math.cos(x);
+			var y1=tr*Math.sin(x);
+			var s=drawLB(sx+x1,sy+y1,7,x+pi*30);
+			points.push(s[4]);
+			points.push(s[3]);
+			points.push(s[2]);
+			points.push(s[1]);
+		}else{
+			var x1=tr*Math.cos(x-i*pi2);
+			var y1=tr*Math.sin(x-i*pi2);
+			var s=drawLB(sx+x1,sy+y1,7,x+30*pi-pi2*i);
+			//points.push(s[6]);
+			//points.push(s[5]);
+			points.push(s[4]);
+			points.push(s[3]);
+			points.push(s[2]);
+			points.push(s[1]);
+			//points.push(s[0]);
+			//points.push(s[Math.abs(parseInt(i*pi)%5-1)]);
+		}
+	}
+	if(noCacheData){
+		D2.polygon(points,noCacheData,noCacheData);
+	}else{
+		D.polygon(points,false,noCacheData);
+	}
+	if(!noCacheData){
+		D.circle(sx,sy,tr+(tr/10),false,noCacheData);
+	}else{
+		D2.set({strokeStyle:"rgb(0,0,0)",fillStyle:"rgb(0,0,0)"});
+		D2.circle(sx,sy,10,true,noCacheData);
+	}
+}
+function drawLB(x0,y0,lr,xpi,jj){
+	var s=[];
+	for(var x=0;x<Math.PI*2;x+=Math.PI*2/6){
+		var x1=lr*Math.cos(x+xpi);
+		var y1=lr*Math.sin(x+xpi);
+		s.push({'x':x0+x1,'y':y0+y1});
+	}
+	return s;
+}
+</script>
+<style>
+body {
+	background-color:#000000;
+	margin:0;
+	padding:0;
+	text-align:center;
+	font-size:12px;
+}
+#cv,#cv2 {
+	/*background-color:#FFFFFF;*/
+	float:left;
+}
+</style>
+</head>
+<body>
+<div style=" width:1000px; margin:0 auto;" >
+  <canvas id="cv2"></canvas>
+  <canvas id="cv"></canvas>
+  <div style="float:left; margin-left:50px; padding-top:50px; line-height:3.0em; border:1px solid #FFFFFF; width:300px; color:#FFFFFF">
+    大齿轮半径:<input id="R"  value="240" />
+    <br />
+    小齿轮半径:<input id="r" value="80"  />
+    <br />
+    <input type="button" value="增加内摆线" />
+    <input type="button" value="减少内摆线" />
+    <br />
+    <input type="button" value="设 置" />
+    <input value="随 机" type="button" />
+  </div>
+  <br style="clear:both;" />
+</div>
+<div style="padding-top:30px; color:#FFFFFF;">
+  <input type="button" value="清 空" />
+  <input type="button" value="暂 停" />
+  <input type="button" value="保 存" />
+</div>
+</body>
+</html>

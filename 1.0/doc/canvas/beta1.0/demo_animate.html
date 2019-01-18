@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ExplorerCanvas Example 1</title>
+<script type="text/javascript" src="../jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/canvas.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
+<script type="text/javascript" src="js/canvas2image.js"></script>
+<!--[if IE]><script type="text/javascript" src="js/excanvas_r73.js"></script><![endif]-->
+
+<script type="text/javascript"> 
+var D;
+var line=[];
+var animate;
+var i=1;
+var step=1;
+var R=40,r=-24,O=10;
+$(function(){
+	document.getElementById('cv').width=500;
+	document.getElementById('cv').height=500;
+	D=new canvas('cv');
+	animate=setInterval("graphics()",step);
+	
+	$("input").click(function(){
+		switch(this.value){
+			case '暂 停':
+				this.value='继 续';
+				clearInterval(animate);
+			break;
+			case '继 续':
+				this.value='暂 停';
+				animate=setInterval("graphics()",step);
+			break;
+			case '清 空':
+				D.clear();
+			break;
+			case '保 存':
+				Canvas2Image.saveAsPNG(D.cvs);
+			break;
+			case '随 机':
+				R=parseFloat((Math.random()*150*(Math.random()*2-1)).toFixed(2));
+				r=parseFloat((Math.random()*150*(Math.random()*2-1)).toFixed(2));
+				O=parseFloat((Math.random()*80*(Math.random()*2-1)).toFixed(2));
+				$('#R').val(R);
+				$('#r').val(r);
+				$('#O').val(O);
+				//D.clear();
+			break;	
+			case '设 置':
+				R=parseFloat($('#R').val());
+				r=parseFloat($('#r').val());
+				O=parseFloat($('#O').val());
+				//D.clear();
+			break;
+		}
+	});
+	
+});
+var x1=0,y1=0;
+function graphics(){
+	x1 = (!x1?(R-O):x1);  
+	y1 = (!y1?0:y1);  
+	var x2 = (R+r)*Math.cos(i*Math.PI/72) - (r+O)*Math.cos(((R+r)/r)*(i*Math.PI/72)); 
+	var y2 = (R+r)*Math.sin(i*Math.PI/72) - (r+O)*Math.sin(((R+r)/r)*(i*Math.PI/72));  
+	var x3 = (R+r)*Math.cos((i-20)*Math.PI/72) - (r+O)*Math.cos(((R+r)/r)*((i-20)*Math.PI/72)); 
+	var y3 = (R+r)*Math.sin((i-20)*Math.PI/72) - (r+O)*Math.sin(((R+r)/r)*((i-20)*Math.PI/72));  
+	var circle="rgb("+(i%255)+","+(255-i%255)+","+(Math.abs(255-i)%255)+")";
+	D.set({strokeStyle:circle,fillStyle:circle});
+	//D.circle(250+x2,250+y2,8,true);
+	D.text('░',250+x2,250+y2);
+	D.set({strokeStyle:"#FFFFFF",fillStyle:"#FFFFFF",font:"10px"});
+	D.text('░',250+x3,250+y3);
+	//D.circle(250+x3,250+y3,6,true);
+	//D.set({strokeStyle:circle,fillStyle:circle});
+	//D.text('░',250+x3,250+y3)
+	//D.line(250+x1,250+y1,250+x2,250+y2);  
+	x1 = x2;  
+	y1 = y2;  
+	i++; 
+}
+</script>
+<style>
+body {
+	background-color:#000000;
+	margin:0;
+	padding:0;
+	text-align:center;
+}
+#cv {
+	background-color:#FFFFFF;
+	float:left;
+}
+</style>
+</head>
+<body>
+<div style=" width:1000px; margin:0 auto;" >
+  <canvas id="cv"></canvas>
+  <div style="float:left; margin-left:50px; padding-top:50px; line-height:3.0em; border:1px solid #FFFFFF; width:300px; color:#FFFFFF">
+    R:<input id="R"  value="40" />
+    <br />
+    r:<input id="r" value="-24"  />
+    <br />
+    O:<input id="O" value="10"  />
+    <br />
+    <input type="button" value="设 置" />
+    <input value="随 机" type="button" />
+  </div>
+  <br style="clear:both;" />
+</div>
+<div style="padding-top:30px; color:#FFFFFF;">
+  <input type="button" value="清 空" />
+  <input type="button" value="暂 停" />
+  <input type="button" value="保 存" />
+</div>
+</body>
+</html>

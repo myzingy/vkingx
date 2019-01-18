@@ -1,0 +1,124 @@
+<style>.demo_nth{height:28px;padding:20px;border:none;margin:0}
+.demo_nth li{width:28px;height:28px;background:#aaa;border-radius:20px;float:left;margin:0 10px 0 0;_display:inline;list-style:none; text-indent:-9999px}
+.demo_nth01 li:nth-child(2),.demo_nth02 li:nth-child(n+4),.demo_nth03 li:nth-child(-n+4),.demo_nth04 li:nth-child(2n),.demo_nth05 li:nth-child(2n-1),.demo_nth06 li:nth-child(3n+1),.demo_nth07 li:last-child,.demo_nth08 li:nth-last-child(3){background:#090}
+.demo_nth01 li:nth-child(2){
+	background:#090
+}</style>
+<div class="entry">
+			<p>前端的哥们想必都接触过css中一个神奇的玩意，可以轻松选取你想要的标签并给与修改添加样式，是不是很给力，它就是“<strong>:nth-child</strong>”。</p>
+<p>下面我将用几个典型的实例来给大家讲解:nth-child的实际用途：</p>
+<p><strong>Tips：</strong>还用低版本的IE浏览器的哥们请绕过！</p>
+<h2>:nth-child(2)选取第几个标签，“2可以是你想要的数字”</h2>
+<ul class="demo_nth demo_nth01">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-child(2){background:#090}</pre>
+<h2>:nth-child(n+4)选取大于等于4标签，“n”表示从整数，下同</h2>
+<ul class="demo_nth demo_nth02">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-child(n+4){background:#090}</pre>
+<h2>:nth-child(-n+4)选取小于等于4标签</h2>
+<ul class="demo_nth demo_nth03">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-child(-n+4){background:#090}</pre>
+<h2>:nth-child(2n)选取偶数标签，2n也可以是even</h2>
+<ul class="demo_nth demo_nth04">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-child(2n){background:#090}</pre>
+<h2>:nth-child(2n-1)选取奇数标签，2n-1可以是odd</h2>
+<ul class="demo_nth demo_nth05">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-child(2n-1){background:#090}</pre>
+<h2>:nth-child(3n+1)自定义选取标签，3n+1表示“隔二取一”</h2>
+<ul class="demo_nth demo_nth06">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-child(3n+1){background:#090}</pre>
+<h2>:last-child选取最后一个标签</h2>
+<ul class="demo_nth demo_nth07">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:last-child{background:#090}</pre>
+<h2>:nth-last-child(3)选取倒数第几个标签,3表示选取第3个</h2>
+<ul class="demo_nth demo_nth08">
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+<li>1</li>
+</ul>
+<pre>.demo01 li:nth-last-child(3){background:#090}</pre>
+<p>ok，:nth-child的这些用法在实际中很用得着，不用单独给需要选取的标签加上ID或Class，是不是很拉轰！</p>
+<p>转载请注明：<a href="http://www.daqianduan.com">大前端</a> ? <a href="http://www.daqianduan.com/css-nth-child/">详解CSS中:nth-child的用法</a></p>		</div>

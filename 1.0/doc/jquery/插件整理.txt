@@ -1,0 +1,22 @@
+1，放大镜插件 jqzoom ，和ecmall产品展示图片一样，在图片侧边出现原图
+  url：http://www.mind-projects.it/projects/jqzoom/
+  demo：http://www.mind-projects.it/projects/jqzoom/demos.php#demo1
+  
+2,截图插件 imgAreaSelect,可以高亮选择图片区域，可放大拖拽
+  url：http://odyniec.net/projects/imgareaselect/
+  demo：http://odyniec.net/projects/imgareaselect/
+  
+3，幻灯效果Image Rotator，不自动切换 如图preview_main.jpg
+  url：http://designm.ag/tutorials/image-rotator-css-jquery/
+  demo：http://www.sohtanaka.com/web-design/examples/image-rotator/#
+  
+4，image Effect 如图preview.jpg
+  url：http://www.sohtanaka.com/web-design/fancy-thumbnail-hover-effect-w-jquery/
+  demo：http://www.sohtanaka.com/web-design/examples/image-zoom/
+
+5, switchTab 选项卡
+
+  demo：http://www.ks-pe.com/Tech/switch-demo.html
+6,tipsWindown.rar
+
+	demo:http://leotheme.cn/wp-content/uploads/Example/js/tipswindown/

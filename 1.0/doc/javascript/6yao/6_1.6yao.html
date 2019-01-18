@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>六爻</title>
+        <style type="text/css">
+            body{
+                font: "MS Sans Serif", Geneva, sans-serif;
+                font-size: 12px;
+                margin: 0px;
+				
+				
+            }
+            .center {
+                width: 310px;
+                min-height: 460px;
+                background-color: #eeeeee;
+                margin: 0 auto;
+            }
+            
+            .g_show {
+                margin: 8px;
+                margin-right: 0px;
+                float: left;
+                width: 30%;
+            }
+            
+            .yao {
+                width: 90px;
+                margin-bottom: 5px;
+				height:10px;
+            }
+            
+            .yang {
+                /*border-top: solid 10px #ee3333;*/
+				background-image:url(drawable-mdpi/red_yang.png);
+            }
+            
+            .yin {
+                /*border-top: dashed 10px #ee3333;*/
+				background-image:url(drawable-mdpi/red_yin.png);
+            }
+            
+            #gua6 {
+                height: 210px;
+            }
+            
+            #gua1 {
+                width: 100%;
+                height: 100px;
+				padding-left:8px;
+            }
+            
+            #gua1 .fleft {
+                float: left;
+                width: 50%;
+            }
+            
+            #yao6display {
+                /*padding: 0 0 0 8px;*/
+                margin-top: -5px;
+            }
+            
+            #yao6display .yang{
+            	background-image:url(drawable-mdpi/blue_yang.png);
+            }
+			#yao6display .yin {
+                background-image:url(drawable-mdpi/blue_yin.png);
+            }
+            
+            #start {
+                width: 100%;
+            }
+            
+            .zhulist {
+                overflow-y: hidden;
+                height: 120px;
+            }
+            
+            .zhulist .red {
+                font-weight: bold;
+                color: red;
+            }
+            
+            .zhulist .blue {
+                font-weight: bold;
+                color: blue;
+                text-align: right;
+                padding-right: 20px;
+            }
+            
+            .guainfo {
+                display: none;
+                width: 500px;
+                height: 500px;
+                position: absolute;
+                overflow: hidden;
+                border: 1px solid red;
+                text-align: left;
+                overflow-y: auto;
+				background-color:#fff;
+				font-weight:normal;
+            }
+        </style>
+        <script type="text/javascript" src="../../../js/jquery.min.js">
+        </script>
+        <script type="text/javascript" src="64g.class.js">
+        </script>
+        <script type="text/javascript">
+            var displayInnerTime;
+            var rs;
+            var b6yao = '';
+            var xmlData = [];
+            $(function(){
+                getXML();
+                rs = new g();
+                $('#start').click(function(){
+                    if ($(".blue", '#zhu').length > 4) {
+                        if (confirm("确定后将清除目前的5注数据，确定继续吗？")) {
+                            $('#zhu').html($('tr:first', '#zhu').html());
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    if (displayInnerTime) {
+                        if (!rs.selectG(rs.G_10)) 
+                            return;
+                        var html = rs.getHtml();
+                        $(html).appendTo('#gua6');
+                        //
+                        b6yao += rs.G_10 % 2 == 0 ? '0' : '1';
+                        var html6 = '<div class="yao ' + (rs.G_10 % 2 == 0 ? 'yin' : 'yang') + '"></div>';
+                        $(html6).appendTo('#yao6display');
+                        //
+                        if (rs.G_ARR.length > 5) {
+                            clearInterval(displayInnerTime);
+                            displayInnerTime = null;
+                            rs.playCP();
+                            b6yao = parseInt(b6yao, 2);
+                            var xml = '<div class="guainfo"><img width="480" src="drawable-mdpi/liuyaoimage_'+(b6yao<10?'00'+b6yao:'0'+b6yao)+'.png"/>' + xmlData[b6yao] + '</div>';
+                            b6yao = (b6yao % 16);
+                            b6yao = b6yao == 0 ? 16 : b6yao;
+                            $(".blue:last", '#zhu').html('<a href="#" title="点击查看卦象" class="gualink">' + (b6yao > 9 ? b6yao : ('0' + b6yao)) + '？</a>' + xml);
+                            $('.gualink').click(function(e){
+                                $(this).next().css({
+                                    top: 0,
+                                    display: 'block'
+                                });
+                                
+                            })
+                            $('.guainfo').mouseout(function(){
+                                $(this).hide();
+                            });
+							$('.guainfo').click(function(){
+                                $(this).hide();
+                            });
+                            //clear
+                            rs.claerG();
+                            b6yao = '';
+                            
+                            $(this).html(' 开 始  （空格键）【心中默念"求财"】');
+                            return;
+                        }
+                        
+                    }
+                    else {
+                        displayInnerTime = setInterval("dispaly_show();", 100);
+                        $('#gua6').html('');
+                        $('#yao6display').html('&nbsp;');
+                        $(this).html(' 选 择  （空格键）【心中默念"求财"】');
+                    }
+                });
+                $(document).keyup(function(e){
+                    if (32 == e.keyCode) {
+                        $('#start').trigger('click');
+                    }
+                });
+            });
+            function dispaly_show(){
+                rs.randG();
+                var html = rs.getHtml();
+                $('#rand_gua_display').html(html);
+                
+            }
+            
+            function getXML(){
+                $.ajax({
+                    type: "GET",
+                    url: "drawable-mdpi/qiankun.xml",
+                    dataType: "xml",
+                    success: function(data){
+                        xml = data;
+                        $(data).find('resources').find('item').each(function(i, v){
+                            xmlData.push($(v).text().replace(/\\n/g, '<br/>'));
+                        });
+                    }
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <div class="center">
+            <div id="gua6"></div>
+            <div style="clear:both;"></div>
+            <div id="gua1">
+                <div class="fleft" id="yao6display">
+                </div>
+                <div class="fleft" id="rand_gua_display">
+                </div>
+            </div>
+            <div style="clear:both;"></div>
+            <button id="start">
+                开 始 （空格键）【心中默念"求财"】
+            </button>
+            <div class="zhulist">
+                <table id="zhu" width="100%">
+                    <tr>
+                        <th>
+                            NO.
+                        </th>
+                        <th colspan="6">
+                            红球区
+                        </th>
+                        <th>
+                            篮球区
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

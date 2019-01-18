@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>flexigrid 扩展 PHP趣味程序 T-800@vking</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="flexigrid/flexigrid.css"/>
+<script type="text/javascript">
+var base_url="http://t.800shang.com/";
+var index_page="index.php";
+</script>
+<script type="text/javascript" src="http://t.800shang.com/js/jquery.min.js"></script>
+<script type="text/javascript" src="flexigrid.js"></script>
+<script type="text/javascript">
+$(function(){
+	$("#user_management_list_table").flexigrid ({
+		url: 'user.json',  //json文件地址
+		dataType: 'json',
+		method:'GET',
+		colModel : [
+			{display: 'ID', name : 'id', fieldname:'id', width : 40, sortable : true, align: 'center'}
+			,{display: 'Name', name : 'name', width : 180, sortable : true, align: 'left'}
+			,{display: 'Age', name : 'age', width : 120, sortable : true, align: 'left'}
+			,{display: 'webSite', name : 'website', width : 250, sortable : true, align: 'left'}
+],
+		buttons : [
+			{name: 'Add', bclass: 'add', onpress : test},
+			{name: 'Delete', bclass: 'delete', onpress : test},
+			{separator: true}
+			],
+		searchitems : [
+			{display: 'ID', name : 'id'},
+			{display: 'Name', name : 'name', isdefault: true}
+			],
+		sortname: "id",
+		sortorder: "asc",
+		usepager: true,
+		title: 'user management',
+		useRp: true,
+		rp: 15,
+		showTableToggleBtn: true,
+		width: 'auto',
+		height: 200
+	});
+});
+function test(com,grid) {
+	if (com=='Delete') {
+			confirm('Delete ' + $('.trSelected',grid).length + ' items?')
+	}else if (com=='Add') {
+			alert('Add New Item');
+	}			
+}
+</script>
+</head>
+<body>
+这个插架我扩展了根据字段显示值，官方插件是根据json顺序显示数据。flexigrid.js 429行处的idx索引做了调整
+<table id="user_management_list_table" style="display:none"></table></body>
+</html>

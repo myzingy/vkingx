@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Javascipt速度优化</title>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="stopwatch.js"></script>
+<script type="text/javascript">
+//////////////////////////////////////////////////////////////////
+function forFastLoop(count){
+	var watch=stopwatch.getWatch("For fast loop",true);
+	var total=0;
+	var loopCounter=fibonacci(count); //仅仅计算依次循环计数
+	for(var i=0;i<loopCounter;i++){
+		total+=i;
+	}
+	watch.stop();
+	alert(total);
+}
+function forSlowLoop(count){
+	var watch=stopwatch.getWatch("For slow loop",true);
+	var total=0;
+	for(var i=0;i<fibonacci(count);i++){ //每次重新计算循环次数
+		total+=i;
+	}
+	watch.stop();
+	alert(total);
+}
+function fibonacci(count){//计算斐波那契序列
+	var a=1;
+	var b=1;
+	for(var i=0;i<count;i++){
+		var total=a+b;
+		a=b;
+		b=total;
+	}
+	return b;
+}
+///////////////////////////////////////////////////////////////////
+function slowNodes(count){
+	var watch=stopwatch.getWatch("Dom slow nodes",true);
+	var $container=$('<div></div>');
+	$container.attr('class','mousemat');
+	var $outermost=$('#top');
+	$container.appendTo($outermost);
+	for(var i=0;i<count;i++){
+		var $node=$('<div></div>');
+		$node.attr('class','cursor').css({position:'absolute',left:(100+parseInt(Math.random()*492))+'px',top:(200+parseInt(Math.random()*492))+'px'});
+		$node.appendTo($container);
+	}
+	watch.stop();
+}
+function fastNodes(count){
+	var watch=stopwatch.getWatch("Dom fast nodes",true);
+	var $container=$('<div></div>');
+	$container.attr('class','mousemat');
+	var $outermost=$('#top');
+	for(var i=0;i<count;i++){
+		var $node=$('<div></div>');
+		$node.attr('class','cursor').css({position:'absolute',left:(100+parseInt(Math.random()*492))+'px',top:(200+parseInt(Math.random()*492))+'px'});
+		$node.appendTo($container);
+	}
+	$container.appendTo($outermost);
+	watch.stop();
+}
+///////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+$(function(){
+	var watch=stopwatch.getWatch("window onload",true);
+	watch.stop();
+	stopwatch.report();
+	$('button').click(function(){
+		var count=$('#count').val();
+		switch(this.id){
+			case "for-fastloop" :
+				forFastLoop(count>25?25:count);
+			break;
+			case "for-slowloop" :
+				forSlowLoop(count>25?25:count);
+			break;
+			case "dom-fastloop" :
+				fastNodes(count<640?640:count);
+			break;
+			case "dom-slowloop" :
+				slowNodes(count<640?640:count);
+			break;
+			
+		}
+		stopwatch.report();
+	});
+});
+</script>
+<style type="text/css">
+	.cursor{ width:10px; height:10px; background-color:#FFFF00;}
+</style>
+</head>
+<body>
+	<input value="25" id="count"/>
+    <fieldset>
+        <legend>
+            FOR 优化
+        </legend>
+        
+        <button id="for-fastloop">
+            fastloop
+        </button>
+        <button id="for-slowloop">
+            slowloop
+        </button>
+    </fieldset>
+	<fieldset>
+        <legend>
+            DOM 优化
+        </legend>
+        <div id="top">
+        	<div class="mousenat" id="mousenat"></div>
+        </div>
+		<button id="dom-fastloop">
+            fastloop
+        </button>
+        <button id="dom-slowloop">
+            slowloop
+        </button>
+    </fieldset>
+</body>
+</html>

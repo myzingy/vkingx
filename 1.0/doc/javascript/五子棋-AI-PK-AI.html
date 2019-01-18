@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>五子棋-AI战AI.html</title>
+<style type="text/css">
+	table{ border:10px solid #cccccc;float:left;}
+	.aiinfo{font-size:12px;float:left;width:300px; height:600px; background-color:#008080; border:10px solid #119191; color:#ffffff;}
+	.aiinfo h1{ font-size:14px;}
+	.td_pos{ position:relative;}
+	.pos_top{ position:absolute; left:10px; top:0px; width:10px; height:10px; background-color:#DDEEFF; font-size:10px;}
+	.pos_left{ position:absolute; left:0px; top:10px; width:10px; height:10px; background-color:#DDEEFF; font-size:10px;}
+</style>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript">
+	if(typeof window.console == 'undefined'){window.console={'log':function(){},'error':function(){}}}
+	Number.prototype.toInt=function(){
+		var num=parseInt(this);
+		var reg=(this+'').match(/\.([0-9])(.*)/);
+		if(reg && reg[1]>4){
+			num+=1;
+		}
+		return num;
+	}
+	//AI
+	var AI=function(checkerboard,userA,userB){
+		this.depth=5;
+		this.checkerboard=checkerboard;
+		this.piece={};
+		this.fourPos=[];
+		this.userA= 'A';
+		this.userB=	'B';
+		this.memory={};
+		this.memory[this.userA]={};
+		this.memory[this.userB]={};
+		this.eightBase=this.fixBoard(0).concat(this.fixBoard(45));
+	}
+	//根据角度构造4方向坐标
+	AI.prototype.fixBoard=function(anglex){
+		var PI2=Math.PI*2;
+		anglex=typeof anglex=='undefined'?0:anglex;//角度
+		var angle=anglex/PI2;
+		var r=(anglex==0)?1:Math.sqrt(2);
+		var points=[];
+		for(var i=angle;i<PI2+angle;i+=PI2/4){
+			var x=r*Math.cos(i);
+			var y=r*Math.sin(i);
+			points.push({
+				x: x,
+				y: y
+			});
+		}
+		return points;
+	}
+	//根据棋子位置及八项基数构造八项坐标
+	AI.prototype.makeEightPos=function(piece){
+		var piece=piece || this.piece;
+		var eightBase=this.eightBase;
+		var eightPos=[];
+		for (var j = 0; j < 8; j++) {
+			eightPos[j]=[];
+			eightPos[j][0]={x:piece.x,y:piece.y};
+			var depth=this.depth;
+			for(var i=1;i<=depth;i++){
+				var x=eightBase[j].x*i+piece.x;
+				var y=eightBase[j].y*i+piece.y;
+				eightPos[j][i]={x:x.toInt(),y:y.toInt()};
+				
+			}
+		}
+		return eightPos;
+	}
+	
+	//连接八项坐标构造四项坐标
+	AI.prototype.makeFourPos=function(eightPos){
+		var fourPos=[];
+		for(var i=0;i<6;i++){
+			if(i==2 || i==3) continue;
+			eightPos[i].shift();
+			fourPos.push((eightPos[i+2].reverse()).concat(eightPos[i]));
+		}
+		return fourPos;
+	}
+	AI.prototype.rivalUser=function(flag){
+		return flag==this.userA?this.userB:this.userA;
+	}
+	//
+	AI.prototype.check=function(piece){
+		this.piece=piece;
+		var eightPos=this.makeEightPos();
+		this.fourPos=this.makeFourPos(eightPos);
+		return this.checkVictory();
+	}
+	//
+	AI.prototype.addMemory=function(pos,memory,userFlag){
+		var pos=pos.x+'_'+pos.y;
+		if(typeof this.memory[userFlag][pos]=='undefined') this.memory[userFlag][pos]=[];
+		this.memory[userFlag][pos].push(memory);
+		//console.log(this.memory);
+	}
+	AI.prototype.delMemory=function(pos,userFlag){
+		var pos=pos.x+'_'+pos.y;
+		this.memory[userFlag][pos]=[];
+		delete this.memory[userFlag][pos];
+		//console.log(this.memory);
+	}
+	AI.prototype.analysisMemory=function(){
+		var UA=this._VanalysisMemory(this.userA);
+		var UB=this._VanalysisMemory(this.userB);
+		var point=UA;
+		if(UB.status<UA.status || (UB.status==UA.status && UB.minRegIndex<=UA.minRegIndex)){
+			point=UB;
+		}
+		return point;
+	}
+	//5-8 新的AI分析
+	AI.prototype._VanalysisMemory = function(userFlag){
+		var Umemory=this.memory[userFlag];
+		var data=this.checkerboard.data;
+		var aiLength=this.depth*2;
+		var reg=this.createRegs(userFlag);
+		//get min
+		var minRegIndex=9999;
+		for(var p in Umemory){
+			for(var i=0;i<Umemory[p].length;i++){
+				if(!Umemory[p][i].flag) continue;
+				var pn=p.split('_');
+				if(!this.isSetPiece(pn[0],pn[1])){
+					this.memory[userFlag][p][i].flag=false;
+					continue;
+				}
+				var linedata=Umemory[p][i].linedata;
+				var key=[];
+				var t_rstr=reg[Umemory[p][i].regIndex].toString();
+				for(var j=0;j<aiLength;j++){
+					//console.log("第"+i+"项:",fourPos[i][j].x,fourPos[i][j].y);
+					if(typeof data[linedata[j].x]=='undefined' || typeof data[linedata[j].x][linedata[j].y]=='undefined') continue;
+					var mflag=data[linedata[j].x][linedata[j].y].flag;
+					key.push(mflag);
+				}
+				key=key.toString();
+				var nextPointIndex=key.indexOf(t_rstr);
+				if(nextPointIndex>-1){
+					minRegIndex=Math.min(minRegIndex,Umemory[p][i].regIndex);
+				}else{
+					this.memory[userFlag][p][i].flag=false;
+				}
+			}	
+		}
+		if(minRegIndex==9999){
+			return {nextPos:{x:0,y:0},status:minRegIndex,minRegIndex:minRegIndex};
+		}
+		//get min regs
+		var pos=[];
+		for (var p in Umemory) {
+			for(var i=0;i<Umemory[p].length;i++){
+				if(!Umemory[p][i].flag) continue;
+				if(Umemory[p][i].regIndex==minRegIndex){
+					pos.push(p);
+				}
+			}
+		}
+		//get min-min pos
+		var mpos=[];
+		for(var i=0;i<pos.length;i++){
+			var p=Umemory[pos[i]];
+			var segIndexs=[];
+			for (var j = 0; j < p.length; j++) {
+				segIndexs.push(p[j].regIndex);
+			}
+			segIndexs.sort();
+			mpos.push(typeof segIndexs[1]=='undefined'?0:segIndexs[1]);
+		}
+		var max=9999,index=0;
+		for(var i=0;i<mpos.length;i++){
+			if(mpos[i]!=0 && max>mpos[i]){
+				index=i;
+				max=mpos[i];
+			}
+		}
+		var nextPos=pos[index].split('_');
+		console.log(userFlag,minRegIndex,max,pos[index]);
+		return {nextPos:{x:parseInt(nextPos[0]),y:parseInt(nextPos[1])},status:minRegIndex,minRegIndex:max};
+	}
+	
+	
+	//
+	AI.prototype.isSetPiece=function(x,y){
+		var data=this.checkerboard.data;
+		if(typeof data[x]!='undefined' && typeof data[x][y]!='undefined' && data[x][y].flag=='0'){
+			return true;
+		}
+		return false;
+	}
+	
+	//
+	AI.prototype.createRegs=function(flag){
+		var reg=[
+			[flag,flag,flag,flag,flag],
+			//1-5
+			[0,flag,flag,flag,flag],
+			[flag,0,flag,flag,flag],
+			[flag,flag,0,flag,flag],
+			[flag,flag,flag,0,flag],
+			[flag,flag,flag,flag,0],
+			//6-8
+			[0,flag,0,flag,flag,0],
+			[0,flag,flag,0,flag,0],
+			[0,flag,flag,flag,0],
+			//9-14
+			[flag,flag,flag,0],
+			[0,flag,flag,flag],
+			[flag,0,flag,flag,0],
+			[flag,flag,0,flag,0],
+			[0,flag,0,flag,flag],
+			[0,flag,flag,0,flag],
+			//15-18
+			[0,flag,0,flag,0],
+			[0,flag,0,0,flag,0],
+			[0,0,0,flag,flag,0],
+			[0,flag,flag,0,0,0],
+			//19-26
+			[0,flag,flag,0],
+			[flag,0,0,flag,0],
+			[0,flag,0,0,flag],
+			[flag,flag,0],
+			[0,flag,flag],
+			[0,flag,0,flag],
+			[flag,0,flag,0],
+			[flag,0,flag],
+			//26-28
+			[0,flag,0],
+			[0,flag],
+			[flag,0]
+		];
+		return reg;
+	}
+	//根据当前piece检查棋盘
+	AI.prototype.checkVictory=function(){
+		/*
+		 * status 说明
+		 * -1:游戏结束
+		 * 0：和棋
+		 * 1：正常
+		 */
+		 
+		var data=this.checkerboard.data;
+		var fourPos=this.fourPos;
+		var piece=this.piece;
+		var aiLength=this.depth*2;
+		var flag=this.piece.flag;
+		//var obj={status:9999,nextPos:{x:-1,y:0}};
+		var reg=this.createRegs(flag);
+		//var u_risk=9999;//定位正则
+		for(var i=0;i<4;i++){
+			var keyArr=[],key=[];
+			for(var j=0;j<aiLength;j++){
+				//console.log("第"+i+"项:",fourPos[i][j].x,fourPos[i][j].y);
+				if(typeof data[fourPos[i][j].x]=='undefined' || typeof data[fourPos[i][j].x][fourPos[i][j].y]=='undefined') continue;
+				var mflag=data[fourPos[i][j].x][fourPos[i][j].y].flag;
+				key.push(mflag);
+				keyArr.push({
+					x: fourPos[i][j].x,
+					y: fourPos[i][j].y,
+					flag: mflag
+				});
+			}
+			var key=key.toString();
+			
+			
+				for(var ri=0;ri<reg.length;ri++){
+					var t_rstr=reg[ri].toString();
+					//var t_reg=new RegExp(t_rstr,'ig');
+					//if(t_reg.test(key)){
+						var nextPointIndex=key.indexOf(t_rstr);
+						if (nextPointIndex > -1) {
+							if(ri==0){
+								return true;
+							}
+							nextPointIndex=nextPointIndex/2;
+							for (var pi = nextPointIndex; pi < nextPointIndex+reg[ri].length; pi++) {
+								
+								if (keyArr[pi].flag == 0) {
+									if ((ri == 6 || ri == 7) && nextPointIndex>pi) {
+										this.addMemory({x:keyArr[pi].x,y:keyArr[pi].y},{regIndex:ri,linedata:fourPos[i],flag:true},piece.flag);
+									}else{
+										var mri=(ri>=15 && ri<=18)?15:ri;
+										this.addMemory({x:keyArr[pi].x,y:keyArr[pi].y},{regIndex:mri,linedata:fourPos[i],flag:true},piece.flag);	
+									}
+									
+								}
+							}
+							break;
+						}
+					//}
+				}
+		}
+		return false;
+	}
+	
+	//棋盘
+	var Checkerboard=function(width, height){
+		this.width=width;
+		this.height=height;
+		this.init();
+	}
+	Checkerboard.prototype.init=function(){
+		this.data=[];
+		for(var i=0;i<this.width;i++){
+			var _a=[];
+			for (var j = 0; j < this.height; j++) {
+				_a[j]={flag:0};
+			}
+			this.data[i]=_a;
+		}
+		
+	}
+	Checkerboard.prototype.setGUI=function(guiWidth,guiHeight){
+		var w=guiWidth/this.width;
+		var h=guiHeight/this.height;
+		$('#Checkerboard').empty();
+		for (var j = 0; j < this.height; j++) {
+				var $tr=$('<tr></tr>');
+				for (var i = 0; i < this.width; i++) {
+					if(j==0){
+						if(i==0){
+							$('<td><div class="td_pos"><img src="150px-Cross2.svg.png" width="'+w+'" height="'+h+'"/><div class="pos_left">'+(j)+'</div><div class="pos_top">'+(i)+'</div></div></td>').appendTo($tr);
+						}else{
+							$('<td><div class="td_pos"><img src="150px-Cross2.svg.png" width="'+w+'" height="'+h+'"/><div class="pos_top">'+(i)+'</div></div></td>').appendTo($tr);
+						}
+					}else if(i==0){
+						$('<td><div class="td_pos"><img src="150px-Cross2.svg.png" width="'+w+'" height="'+h+'"/><div class="pos_left">'+(j)+'</div></div></td>').appendTo($tr);
+					}else{
+						$('<td><div class="td_pos"><img src="150px-Cross2.svg.png" width="'+w+'" height="'+h+'"/></div></td>').appendTo($tr);
+					}
+					
+				}
+				$tr.appendTo('#Checkerboard');
+		}
+	}
+	Checkerboard.prototype.appendPiece=function(piece){
+		if(typeof this.data[piece.x]!='undefined' && typeof this.data[piece.x][piece.y]!='undefined' && this.data[piece.x][piece.y].flag==0){
+			this.data[piece.x][piece.y]=piece;
+			console.log("当前棋子：",this.data[piece.x][piece.y]);
+			return true;
+		} 
+		return false;
+	}
+	//棋子
+	var Piece=function(x,y,flag){
+		this.x=x;
+		this.y=y;
+		this.flag=flag;
+	}
+	Piece.prototype.appendTo=function(checkerboard){
+		if(typeof checkerboard.data[this.x][this.y]=='undefined') return false;
+		checkerboard.data[this.x][this.y]={x:this.x,y:this.y,flag:this.flag};
+		console.log("当前棋子：",checkerboard.data[this.x][this.y]);
+		//return this.checkVictory(checkerboard.data);
+	}
+	Piece.prototype.checkVictory=function(checkerboard){
+		var eightBase=AI.fixBoard(0).concat(AI.fixBoard(45));
+		var eightPos=AI.makeEightPos(this,eightBase);
+		var fourPos=AI.makeFourPos(eightPos);
+		return AI.checkVictory(checkerboard,fourPos,this);
+	}
+	
+	////////////
+	var GUI_W=600,GUI_H=600;
+	var qipan;
+	var WuZiAI;
+	var $oldimg;
+	function regame(){
+		qipan=new Checkerboard(20,20);
+		qipan.setGUI(GUI_W,GUI_H);
+		WuZiAI=new AI(qipan);
+		eventWuzi();
+	}
+	function eventWuzi(){
+		var $tr=$('tr');
+		$('td').click(function(){
+			var td=this;
+			var x,y;
+			for(var i=0;i<$tr.length;i++){
+				x=$('td',$tr[i]).index(td);
+				if(x>-1){
+					y=i;
+					break;
+				}
+			}
+			if (x > -1) {
+				//console.log("棋子位置：",x, y);
+				var Hqizi=new Piece(x, y,WuZiAI.userA);
+				if(!qipan.appendPiece(Hqizi)) return;
+				$('img',td).attr('src','heizi.png');
+				//Hqizi.appendTo(qipan);
+				if(WuZiAI.check(Hqizi)){
+					alert("游戏结束，黑子胜利");
+					$('td').unbind('click');
+					return;
+				}
+				/////////////////////////////////////////////////
+				///////////////AI 计算下子位置          ////////////////
+				/////////////////////////////////////////////////
+				
+				var Next=WuZiAI.analysisMemory();
+				//console.log("Next",Next);
+				if(Next.status==-1){
+					alert("游戏结束，和棋");
+					$('td').unbind('click');
+					return;
+				}
+				
+				var Bqizi=new Piece(Next.nextPos.x, Next.nextPos.y,WuZiAI.userB);
+				
+				if (!qipan.appendPiece(Bqizi)) {
+					alert('AI 出错！！！');
+					$('td').unbind('click');
+					return;
+				}
+				var $newtr=$('tr:eq('+Next.nextPos.y+')');
+				var $newtd=$('td:eq('+Next.nextPos.x+')',$newtr);
+				$('img',$newtd).attr('src','nowzi.png');
+				if($oldimg){
+					$oldimg.attr('src','baizi.png');
+				}
+				$oldimg=$('img',$newtd);
+				
+				if(WuZiAI.check(Bqizi)){
+					alert("游戏结束，白子胜利");
+					$('td').unbind('click');
+					return;
+				}
+				
+				return;
+			}
+		});
+	}
+	$(function(){
+		$('#Checkerboard').css({width:GUI_W+'px',height:GUI_H+'px'});
+		qipan=new Checkerboard(20,20);
+		qipan.setGUI(GUI_W,GUI_H);
+		WuZiAI=new AI(qipan);
+		eventWuzi();
+	});
+</script>
+</head>
+<body>
+	<div class="aiinfo">
+		<h1>AI 算法概述：</h1>
+圆心位置设置为棋子位置，将圆分割为4等分，然后转动45度角在分割4等分，这样就得到8个点，这8个点正好就是棋子周围的8个点；<br>
+将圆半径从1循环到5，这样将得到每8个方向上的5点<br>
+然后将8方向对角合并后就得到4条线上的10+1点，这1点便是当前的棋子。<br>
+然后将4条线的棋子转成串，用正则匹配权值。<br>
+如合并后的串为 "0UUU0000000",正则为 /0UUU0/,计算出棋子需要下在第一位。<br>&nbsp;<br>
+目前 AI 还有些幼稚，正在完善中。<br>
+<ul>
+	<li>目前对AI的下子点没有做全局的估算</li>
+	<li></li>
+	<li></li>
+	<li>[欢迎交流]goto999@126.com</li>
+</ul>
+		<h1>AI 算法详细：</h1>
+	</div>
+	<table id="Checkerboard"  cellpadding="0" cellspacing="0"></table>
+	<div class="aiinfo">
+		<h1>AI 中的问题：</h1>
+		<button onclick="regame();">重玩</button>
+	</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+.treeview{font-size:12px;left: 0px;top: 0px;margin:5px;}
+.treeview a{color:#000000; text-decoration:none;}
+.treeview a:hover{color:#0088C2;}
+.treeview a.selected{padding: 3px; color:#FFFFFF!important; background-color: rgb(141, 183, 31);}
+.treeview a.errorexp{background-color: rgb(200, 31, 31); background-image:url(../images/red_error.gif);color:#999999!important;}
+.treeview a.treelink {text-decoration:none;}
+.treeview a:hover.treelink {color:#0088C2;}
+.treeview a:active.treelink {color:#FFFFFF;border:none;}
+.treeview a:focus.treelink {-moz-outline-style: none;}
+.treeview, .treeview ul {
+    list-style: none;
+    list-style-image: none;
+    margin: 0px;
+    padding-left: 8px;
+	line-height:1.5em;
+}
+    
+.treeview .hitarea {
+    padding-left:16px;
+    margin-left: -10px;
+    cursor: pointer;
+}
+.treeview .expandable { background: transparent url(../images/drawerTriangleCollapsed.gif) no-repeat; background-position:0 -6px; }
+.treeview .collapsable { background: transparent url(../images/drawerTriangleOpen.gif) no-repeat; background-position:0 -6px;}

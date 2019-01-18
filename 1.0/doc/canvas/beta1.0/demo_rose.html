@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ExplorerCanvas Example 1</title>
+<script type="text/javascript" src="../jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/canvas.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
+<script type="text/javascript" src="js/canvas2image.js"></script>
+<!--[if IE]><script type="text/javascript" src="js/excanvas_r73.js"></script><![endif]-->
+
+<script type="text/javascript"> 
+var D;
+var line=[];
+var animate;
+var i=1;
+var step=1;
+var R=1,r=2,O=100,H=1;
+$(function(){
+	document.getElementById('cv').width=500;
+	document.getElementById('cv').height=500;
+	D=new canvas('cv');
+	drawZB();
+	animate=setInterval("graphics()",step);
+	
+	$("input").click(function(){
+		switch(this.value){
+			case '暂 停':
+				this.value='继 续';
+				clearInterval(animate);
+			break;
+			case '继 续':
+				this.value='暂 停';
+				animate=setInterval("graphics()",step);
+			break;
+			case '清 空':
+				D.clear();
+				drawZB();
+			break;
+			case '保 存':
+				Canvas2Image.saveAsPNG(D.cvs);
+			break;
+			case '随 机':
+				R=parseInt((Math.random()*20*(Math.random()*2-1)).toFixed(2));
+				R=(R==0?1:R);
+				r=parseInt((Math.random()*20*(Math.random()*2-1)).toFixed(2));
+				r=(r==0?2:r);
+				$('#R').val(R);
+				$('#r').val(r);
+				D.clear();
+				drawZB();
+			break;	
+			case '设 置':
+				R=parseFloat($('#R').val());
+				r=parseFloat($('#r').val());
+				O=parseFloat($('#O').val());
+				H=parseFloat($('#H').val());
+				//D.clear();
+			break;
+		}
+	});
+	
+});
+var pi=Math.PI*2/360;
+function graphics(){
+	var x1= Math.sin(i*pi*(R/r))*Math.cos(i*pi)*O;
+	var y1= Math.sin(i*pi*(R/r))*Math.sin(i*pi)*O;
+	var circle="rgb("+(i%255)+","+(255-i%255)+","+(Math.abs(255-i)%255)+")";
+	D.set({strokeStyle:circle,fillStyle:circle});
+	D.circle(250+x1,250+y1,H,true);
+	i++; 
+}
+function drawZB(){
+	D.set({strokeStyle:"#000",fillStyle:"#000"});
+	D.text("玫瑰曲线演示",10,15);
+	for(var x=0;x<Math.PI*2;x+=Math.PI*2/12){
+		var x1=240*Math.cos(x);
+		var y1=240*Math.sin(x);
+		D.line(250,250,250+x1,250+y1);
+		D.text((x*180/Math.PI).toFixed(0),250+x1,250+y1);
+	}
+}
+</script>
+<style>
+body {
+	background-color:#000000;
+	margin:0;
+	padding:0;
+	text-align:center;
+}
+#cv {
+	background-color:#FFFFFF;
+	float:left;
+}
+</style>
+</head>
+<body>
+<div style=" width:1000px; margin:0 auto;" >
+  <canvas id="cv"></canvas>
+  <div style="float:left; margin-left:50px; padding-top:50px; line-height:3.0em; border:1px solid #FFFFFF; width:300px; color:#FFFFFF">
+    Tip:N与D相同时，图像皆为圆形
+    <br />
+    Rose 参数N:<input id="R"  value="1" />
+    <br />
+    Rose 参数D:<input id="r" value="2"  />
+    <br />
+    Rose 半径R:<input id="O" value="100"  />
+    <br />
+    画笔宽度:<input id="H" value="1"  />
+    <br />
+    <input type="button" value="设 置" />
+    <input value="随 机" type="button" />
+  </div>
+  <br style="clear:both;" />
+</div>
+<div style="padding-top:30px; color:#FFFFFF;">
+  <input type="button" value="清 空" />
+  <input type="button" value="暂 停" />
+  <input type="button" value="保 存" />
+</div>
+</body>
+</html>

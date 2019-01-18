@@ -1,0 +1,14 @@
+#showTip{width:226px; display:none}
+#showTip .tip-tp,#showTip .tip-ct,#showTip .tip-bt{background-image:url(tooltip.gif); background-repeat:no-repeat}
+#showTip .tip-tp,#showTip .tip-bt{height:7px; overflow:hidden;}
+#showTip .tip-tp{background-position:0 0}
+#showTip .tip-ct{background-position:-226px 0; background-repeat:repeat-y; padding:0 8px 4px 8px}
+#showTip .tip-ct{white-space:normal; word-wrap:break-word}
+#showTip .tip-bt{background-position:-452px 0}
+#showTip_right{width:227px; display:none}
+#showTip_right .tip-tp,#showTip_right .tip-ct,#showTip_right .tip-bt{background-image:url(tooltip_right.gif); background-repeat:no-repeat}
+#showTip_right .tip-tp,#showTip_right .tip-bt{height:9px; overflow:hidden;}
+#showTip_right .tip-tp{background-position:0 1px}
+#showTip_right .tip-ct{background-position:-227px 0; background-repeat:repeat-y; padding:0 8px 0 8px}
+#showTip_right .tip-ct{white-space:normal; word-wrap:break-word}
+#showTip_right .tip-bt{background-position:-455px 0}

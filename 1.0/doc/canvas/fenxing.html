@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>ExplorerCanvas Example 1</title>
+        <script type="text/javascript" src="jquery-1.4.2.min.js">
+        </script>
+        <script type="text/javascript" src="canvas3.js">
+        </script>
+        <!--[if IE]><script type="text/javascript" src="excanvas_r73.js"></script><![endif]-->
+        <script type="text/javascript">
+            var D;
+            var sx = 400, sy = 250;
+			var regels={
+				"小草":{"xpos":400,"ypos":600,"initDegree":200,"lineLen":15,"depth":5,"degree":3,"bStr":"G","regel":"GFX[+++++GFG][-----GFG]"},
+				"斜草":{"xpos":400,"ypos":800,"initDegree":180,"lineLen":2,"depth":5,"degree":-1.2,"bStr":"F","regel":"F[+++++++++++++++++++++++++F]-F[-------------------------F]F"},
+				"枝":{"xpos":400,"ypos":800,"initDegree":180,"lineLen":5,"depth":5,"degree":35,"bStr":"F","regel":"F[+F]F[-F]F"},
+				"三角":{"xpos":400,"ypos":400, "initDegree":90, "lineLen":30, "depth":5, "degree":60, "bStr":"X", "regel":"--FXF++FXF++FXF--"},
+				"星":{"xpos":100,"ypos":800, "initDegree":180, "lineLen":10, "depth":5, "degree":60, "bStr":"F", "regel":"F-F++F-F"},
+				"树":{"xpos":400,"ypos":800, "initDegree":180, "lineLen":5, "depth":5, "degree":30, "bStr":"F", "regel":"FF-[-F+F+F]+[+F-F-F]"},
+				"棕榈":{"xpos":400,"ypos":800, "initDegree":180, "lineLen":60, "depth":5, "degree":18, "bStr":"F", "regel":"[-FFF][+FFF]F"},
+				"杨柳":{"xpos":400,"ypos":800, "initDegree":180, "lineLen":15, "depth":5, "degree":22.5, "bStr":"F", "regel":"FF+[+F-F-F]-[-F+F+F]"},
+				"砖砌X墙":{"xpos":400,"ypos":800, "initDegree":180, "lineLen":12, "depth":5, "degree":90, "bStr":"F", "regel":"F+F-F-FF+F+F-F"},
+				"斜草":{"xpos":400,"ypos":800,"initDegree":180,"lineLen":2,"depth":5,"degree":-1.2,"bStr":"F","regel":"F[+++++++++++++++++++++++++F]-F[-------------------------F]F"},
+				"斜草":{"xpos":400,"ypos":800,"initDegree":180,"lineLen":2,"depth":5,"degree":-1.2,"bStr":"F","regel":"F[+++++++++++++++++++++++++F]-F[-------------------------F]F"},
+				"斜草":{"xpos":400,"ypos":800,"initDegree":180,"lineLen":2,"depth":5,"degree":-1.2,"bStr":"F","regel":"F[+++++++++++++++++++++++++F]-F[-------------------------F]F"},
+				"斜草":{"xpos":400,"ypos":800,"initDegree":180,"lineLen":2,"depth":5,"degree":-1.2,"bStr":"F","regel":"F[+++++++++++++++++++++++++F]-F[-------------------------F]F"}
+			};
+            
+            $(function(){
+            
+                document.getElementById('cv').width = 800;
+                document.getElementById('cv').height = 800;
+				for(opt in regels){
+					$('<option value="'+opt+'">'+opt+'</option>').appendTo('#regels');
+				}
+				_regels=regels[$('#regels').val()];
+				for(i in _regels){
+					$("#"+i).val(_regels[i]);
+				}
+                D = new canvas('cv');
+				ls = new LS(D);
+                $("input").click(function(){
+                    switch (this.value) {
+                        case '缩 小':
+                            D.scaleCanvas(0.9, 0.9);
+							D.clear();
+                    		D.display();
+                            break;
+                        case '放 大':
+                            D.scaleCanvas(1.1, 1.1);
+                            D.clear();
+                    		D.display();
+							break;
+						case '设置':
+							D.clear();
+							ls = new LS(D);
+                			ls.xpos = parseInt($('#xpos').val()) || 400;
+                			ls.ypos = parseInt($('#ypos').val()) || 400;
+							ls.lineLen=$('#lineLen').val() || 1;
+							ls.depth=parseInt($('#depth').val());
+							ls.bStr = $('#bStr').val() || "F";
+							ls.regel=$('#regel').val() || "F-F";
+							ls.initDegree(parseInt($('#initDegree').val()) || 180);
+							ls.degree=parseFloat($('#degree').val()) || 10;
+							$('#regels_json').html('{"xpos":'+ls.xpos+',"ypos":'+ls.ypos+', "initDegree":'+(parseInt($('#initDegree').val()) || 180)+', "lineLen":'+ls.lineLen+', "depth":'+ls.depth+', "degree":'+ls.degree+', "bStr":"'+ls.bStr+'", "regel":"'+ls.regel+'"}');
+							ls.drawLs();
+							break;
+                    }
+                    
+                });
+				$('input[value="设置"]').trigger('click');
+				$('#regels').change(function(){
+					_regels=regels[$('#regels').val()];
+					for(i in _regels){
+						$("#"+i).val(_regels[i]);
+					}
+				});
+                
+                
+            });
+            function LS(showObj){
+                var owner = this;
+                var _lastArr = new Array();
+                var _shape = D;
+                var _isPen = false;
+                var _currD = 0;
+                var _str = "";
+                var _html = new Array;
+                
+                owner.xpos = 0;
+                owner.ypos = 0;
+                owner.lineLen = 0;
+                owner.degree = 0;
+                owner.depth = 0;
+                owner.bStr = "F";
+                owner.regel = "F";
+                owner.color = "#000000";
+                
+                function toArc(degree){
+                    return degree * (Math.PI / 180);
+                }
+                
+                function toDegree(arc){
+                    return arc * (180 / Math.PI);
+                }
+                
+                function penUp(){
+                    _isPen = false;
+                }
+                
+                function penDown(){
+                    _isPen = true;
+                }
+                function drawLine(x, y, x2, y2){
+                    return {
+                        "x1": x,
+                        "y1": y,
+                        "x2": x2,
+                        "y2": y2
+                    };
+                    
+                    var lenY = y2 - y;
+                    var angle = Math.atan2(lenY, lenX);
+                    var len = Math.floor(Math.sqrt(lenX * lenX + lenY * lenY));
+                    var arr = new Array;
+                    for (var i = 0; i < len; i++) {
+                        arr[i] = "<img src='' style='position:absolute;background-color:" + owner.color + ";top:" + (x + Math.cos(angle) * i) + ";left:" + (y + Math.sin(angle) * i) + ";width:1;height:1;'>";
+                    }
+                    return arr.join("");
+                }
+                
+                function turn(value){
+                    _currD += value;
+                    
+                    if (_currD > 360) {
+                        _currD -= 360;
+                    }
+                    else 
+                        if (_currD < 0) {
+                            _currD += 360;
+                        }
+                }
+                
+                function move(){
+                    var newX = owner.xpos + owner.lineLen * Math.sin(toArc(_currD));
+                    var newY = owner.ypos + owner.lineLen * Math.cos(toArc(_currD));
+                    if (_isPen) {
+                    
+                        _html[_html.length] = drawLine(owner.xpos, owner.ypos, newX, newY);
+                    }
+                    
+                    owner.xpos = newX;
+                    owner.ypos = newY;
+                }
+                
+                function draw(ch){
+                
+                    switch (ch) {
+                        case "F":
+                            penDown();
+                            move();
+                            break;
+                            
+                        case "f":
+                            penUp();
+                            move();
+                            break;
+                            
+                        case "+":
+                            turn(owner.degree);
+                            break;
+                            
+                        case "-":
+                            turn(-owner.degree);
+                            break;
+                            
+                        case "[":
+                            var obj = new Object();
+                            obj.xpos = owner.xpos;
+                            obj.ypos = owner.ypos;
+                            obj.degree = _currD;
+                            _lastArr.push(obj);
+                            break;
+                            
+                        case "]":
+                            owner.xpos = _lastArr[_lastArr.length - 1].xpos;
+                            owner.ypos = _lastArr[_lastArr.length - 1].ypos;
+                            _currD = _lastArr[_lastArr.length - 1].degree;
+                            _lastArr.pop();
+                            break;
+                            
+                        default:
+                            break;
+                    }
+                }
+                
+                function fillChar(){
+                    var str = owner.regel;
+					_zz=eval("/"+owner.bStr+"/g");
+                    for (var i = 0; i < owner.depth; i++) {
+                        
+						owner.bStr = owner.bStr.replace(_zz, str);
+                        
+                    }
+                    for (var s = 0; s < owner.bStr.length; s++) {
+                        draw(owner.bStr.charAt(s));
+                    }
+                    
+                }
+                
+                owner.initDegree = function(value){
+                    _currD = value;
+                    
+                    if (_currD > 360) {
+                        _currD -= 360;
+                    }
+                    else 
+                        if (_currD < 0) {
+                            _currD += 360;
+                        }
+                }
+                
+                owner.drawLs = function(){
+                    fillChar();
+                    for (i = 0; i < _html.length; i++) {
+                        D.line(_html[i].x1, _html[i].y1, _html[i].x2, _html[i].y2);
+                    }
+                    
+                }
+                
+            }
+        </script>
+        <style>
+            body {
+                background-color: #000000;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+				font-size:12px;
+            }
+            
+            #cv {
+                background-color: #FFFFFF;
+                /*border:#CCCCCC 15px solid;*/
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="cv" width="800" height="800"></canvas>
+		<div style=" position:absolute; top:0; right:0; width:300px; border: 5px solid #994466; background-color:#0088C2;">
+			<table style=" text-align:left; ">
+				<tr>
+					<td width="120;">选择图形</td>
+					<td><select id="regels"></select></td>
+				</tr>
+				<tr>
+					<td>图形中心</td>
+					<td>X:<input size="5"  value="10" id="xpos"/>&nbsp;&nbsp;Y:<input size="5"  value="10" id="ypos"/></td>
+				</tr>
+				<tr>
+					<td>画布起始角度</td>
+					<td><input  value="10" id="initDegree"/> °</td>
+				</tr>
+				<tr>
+					<td>画笔角度</td>
+					<td><input  value="10" id="degree"/> °</td>
+				</tr>
+				<tr>
+					<td>画笔长度</td>
+					<td><input  value="10" id="lineLen"/></td>
+				</tr>
+				<tr>
+					<td>迭代深度</td>
+					<td><select id="depth">
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5">5</option>
+						<option value="6">6</option>
+						<option value="7">7</option>
+					</select></td>
+				</tr>
+				<tr>
+					<td>LS基础串</td>
+					<td><input  value="F" id="bStr"/></td>
+				</tr>
+				<tr>
+					<td>LS规则</td>
+					<td><textarea id="regel" rows="6" cols="25"></textarea></td>
+				</tr>
+			</table>
+			<input  type="button" value="设置"/>
+			<div id="regels_json" style=" padding:10px;"></div>
+		</div>
+    </body>
+</html>

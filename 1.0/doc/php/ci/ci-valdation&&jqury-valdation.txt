@@ -1,0 +1,89 @@
+/**
+ * 可以放入helper form中，方便调用，
+ * 作用：同样的规则不用在客户端和服务器端都写了
+ * create js validation rules and message
+ * must ci rules array;
+ * 此中调用了语言文件
+ */
+ 
+ 
+if ( ! function_exists('rules_ci2js')){
+	function rules_ci2js($rules){
+		$CI =& get_instance();
+		$i=0;
+		$form_tmp=array();
+		foreach($rules as $field=>$r){
+			$_arr=explode("|",$r);
+			$__arr=array();
+			$__arr_message=array();
+			foreach($_arr as $v){
+				if(ereg("([minax]{3})_length\[([0-9]+)\]",$v,$tmp)){
+					$__arr[]="{$tmp[1]}length:{$tmp[2]}";
+					$__arr_message["{$tmp[1]}length"]=$CI->lang->line('err_'.$tmp[1].'length').$tmp[2];		
+				}
+				if($v=="required"){
+					$__arr[]="{$v}:true";
+					$__arr_message["required"]=$CI->lang->line('err_required');
+				}
+				if($v=="numeric"){
+					$__arr[]="number:true";
+					$__arr_message["number"]=$CI->lang->line('err_number');
+				}
+				if($v=="integer"){
+					$__arr[]="digits:true";
+					$__arr_message["digits"]=$CI->lang->line('err_integer');
+				}
+				if($v=="valid_email"){
+					$__arr[]="email:true";
+					$__arr_message["email"]=$CI->lang->line('err_email');
+				}
+				if($v=="prep_url"){
+					$__arr[]="url:true";
+					$__arr_message["url"]=$CI->lang->line('err_url');
+				}
+			}
+			if($__arr){
+				$form_tmp['rules'][$i][$field]=$__arr;
+				$form_tmp['messages'][$i][$field]=$__arr_message;
+			}
+		}
+		if(!empty($form_tmp)){
+			$js_rules=json_encode($form_tmp['rules']);
+			$js_message=json_encode($form_tmp['messages']);
+			$js_rules=strtr($js_rules,array(
+				'":["'=>':{',
+				'"],"'=>'},',
+				'","'=>',',
+				'[{"'=>'{',
+				'"]}]'=>'}}',
+			));
+			$js_message=strtr($js_message,array(
+				'['=>'',
+				']'=>'',
+				'":{"'=>':{',
+				'":'=>':',
+				',"'=>',',
+				'{"'=>'{'	
+			));
+			$jsform="rules:{$js_rules},\n messages:{$js_message}";
+			return $jsform;
+		}
+	}
+}
+调用方法：
+
+$rules ['AppName'] = "trim|required|max_length[64]";
+$rules ['GeoLon'] = "trim|required|numeric|max_length[64]";
+$rules['GeoLat']='trim|required|numeric|max_length[64]';
+$data['jsform']=ci_rules2js_rules($rules);
+
+html端写入，需要jquery validate插件
+
+$("#sight_form").validate({
+		<?php echo $jsform;?>,
+		debug: true ,
+		event: "blur",
+		submitHandler: function() {
+			document.getElementById("sight_form").submit();
+		}
+});

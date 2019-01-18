@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Virtual dom 虚拟时间比较</title>
+    <style type="text/css">
+        body,*{
+            padding: 0;
+            border: 0;
+            margin: 0;
+            font-size: 12px;
+        }
+        span,font,diy,textarea{display: block;}
+    </style>
+
+</head>
+<body>
+<p></p>
+<div style="border: 1px solid #ccc; padding: 1%;width:98%;background: #936;min-height:50px; cursor: pointer;">
+    <div style="width:50%; float: left;">
+        <div id="vdom-div-info"></div>
+        <button onclick="updateVirtualDom();">点击执行虚拟dom操作</button>
+    </div>
+    <div style="width:50%;float: right;">
+        <div id="replace-div-info" ></div>
+        <button onclick="clearReCreateDom();">点击清理后重新生成dom操作</button>
+    </div>
+</div>
+<div style="border: 1px solid #ccc; padding: 1%;width:98%">
+    <div id="vdom-div" style="width:50%; float: left; background: #ccc;min-height:50px;"></div>
+    <div id="replace-div" style="width:50%;float: right;"></div>
+</div>
+</body>
+<script type="text/javascript">
+    function clone(myObj){
+        if(typeof(myObj) != 'object' || myObj == null) return myObj;
+        var newObj = new Object();
+        for(var i in myObj){
+            newObj[i] = clone(myObj[i]);
+        }
+        return newObj;
+    }
+
+    var limit=5001;
+    var $vdom=document.getElementById('vdom-div');
+    var $vdom_info=document.getElementById('vdom-div-info');
+    var $rdom=document.getElementById('replace-div');
+    var $rdom_info=document.getElementById('replace-div-info');
+    var styleName='border-width,background-color,color,border-color';
+
+    var getRandIndex=function(){
+        var d='div,li,span,textarea,span,h1,h2,font,ol,p'.split(',');
+        var num =parseInt(limit/3);
+        var rand={};
+        for(var i =0;i<num;i++){
+            var bc="rgba("+parseInt(Math.random()*255)+","+parseInt(Math.random()*255)+","+parseInt(Math.random()*255)+",100)";
+            var k=parseInt(Math.random()*limit);
+            rand[k]={
+                dom:d[parseInt(Math.random()*d.length)],
+                val:'II-'+k,
+                attr:{'data-aa':'aa-'+k,'data-bb':'bb-'+k},
+                style:{"border-width":"1px","background-color":bc,"border-color":bc}
+            };
+        }
+        return rand;
+    };
+    var olddata=getRandIndex();
+
+    var getNewData=function(){
+        var tmp=clone(olddata);
+        for(var k in tmp){
+            var bc="rgba("+parseInt(Math.random()*255)+","+parseInt(Math.random()*255)+","+parseInt(Math.random()*255)+",100)";
+            tmp[k].val='XX-'+k;
+            tmp[k].attr={'xx-data-aa':'aa-'+k,'xx-data-bb':'bb-'+k};
+            tmp[k].style={"background-color":bc,"border-color":bc}
+        }
+        return tmp;
+    };
+    var newdata=getNewData();
+    console.log(olddata,newdata);
+    var oneDom=function(v){
+        var str='<'+v.dom;
+        for(var x in v.attr){
+            str+=' '+x+'="'+v.attr[x]+'"';
+        }
+        str+=' style="{style}"';
+        var style="";
+        for(var s in v.style){
+            style+=s+':'+v.style[s]+';';
+        }
+        str=str.replace('{style}',style);
+        if(v.dom=="input"){
+            str+='value="'+v.val+'">';
+        }else{
+            str+='>'+v.val;
+        }
+        return str+'</'+v.dom+'>';
+    }
+    var initDom=function(){
+        var html = '';
+        for(var i=0;i<limit;i++){
+            var diy=olddata[i]?olddata[i]:{dom:"li",val:i,attr:{'data-val-i':i}};
+            html+=oneDom(diy);
+        }
+        $vdom.innerHTML=html;
+        $rdom.innerHTML=html;
+    };
+
+    window.onload=function(){
+        initDom();
+    };
+
+    //////////////////////
+    function clearReCreateDom(){
+        var d = new Duration("清空后重建");
+
+        d.start();
+        var html = '';
+        for(var i=0;i<limit;i++){
+            var diy=newdata[i]?newdata[i]:{dom:"li",val:i,attr:{'data-val-i':i}};
+            html+=oneDom(diy);
+        }
+        $rdom.innerHTML=html;
+        d.end();
+        $rdom_info.innerText=d.getTime();
+    }
+    function updateVirtualDom(){
+        var d = new Duration("将改变应用到dom上");
+
+        d.start();
+        var cn=$vdom.childNodes;
+        for(var i in newdata){
+            var _dom=cn[i];
+            if(_dom.tagName=="INPUT"){
+                _dom.value=newdata[i].val;
+            }else{
+                _dom.innerHTML=newdata[i].val;
+            }
+            for(var s in newdata[i].style){
+                //if(styleName.indexOf(s)<0)continue;
+                var style_s=s;
+                if(s.indexOf('-')>0){
+                    var _s=s.split('-');
+                    style_s=_s[0]+_s[1][0].toUpperCase()+_s[1].substr(1);
+                }
+                var k='_dom.style.'+style_s+'="'+newdata[i].style[s]+'";';
+                eval(k);
+            }
+            for(var x in newdata[i].attr){
+                _dom[x]=newdata[i].attr[x];
+            }
+        }
+        d.end();
+        $vdom_info.innerText=d.getTime();
+    }
+</script>
+<script>
+    var P = (function(prototype, ownProperty, undefined) {
+        return function P(_superclass /* = Object */, definition) {
+            // handle the case where no superclass is given
+            if (definition === undefined) {
+                definition = _superclass;
+                _superclass = Object;
+            }
+
+            // C is the class to be returned.
+            //
+            // When called, creates and initializes an instance of C, unless
+            // `this` is already an instance of C, then just initializes `this`;
+            // either way, returns the instance of C that was initialized.
+            //
+            //  TODO: the Chrome inspector shows all created objects as `C`
+            //        rather than `Object`.  Setting the .name property seems to
+            //        have no effect.  Is there a way to override this behavior?
+            function C() {
+                var self = this instanceof C ? this : new Bare;
+                self.init.apply(self, arguments);
+                return self;
+            }
+
+            // C.Bare is a class with a noop constructor.  Its prototype will be
+            // the same as C, so that instances of C.Bare are instances of C.
+            // `new MyClass.Bare` then creates new instances of C without
+            // calling .init().
+            function Bare() {}
+            C.Bare = Bare;
+
+            // Extend the prototype chain: first use Bare to create an
+            // uninitialized instance of the superclass, then set up Bare
+            // to create instances of this class.
+            var _super = Bare[prototype] = _superclass[prototype];
+            var proto = Bare[prototype] = C[prototype] = C.p = new Bare;
+
+            // pre-declaring the iteration variable for the loop below to save
+            // a `var` keyword after minification
+            var key;
+
+            // set the constructor property on the prototype, for convenience
+            proto.constructor = C;
+
+            C.extend = function(def) { return P(C, def); }
+
+            return (C.open = function(def) {
+                if (typeof def === 'function') {
+                    // call the defining function with all the arguments you need
+                    // extensions captures the return value.
+                    def = def.call(C, proto, _super, C, _superclass);
+                }
+
+                // ...and extend it
+                if (typeof def === 'object') {
+                    for (key in def) {
+                        if (ownProperty.call(def, key)) {
+                            proto[key] = def[key];
+                        }
+                    }
+                }
+
+                // if no init, assume we're inheriting from a non-Pjs class, so
+                // default to using the superclass constructor.
+                if (!('init' in proto)) proto.init = _superclass;
+
+                return C;
+            })(definition);
+        }
+
+        // as a minifier optimization, we've closured in a few helper functions
+        // and the string 'prototype' (C[p] is much shorter than C.prototype)
+    })('prototype', ({}).hasOwnProperty);
+</script>
+
+<script>
+    "use strict";
+    var Duration = P(function(dur) {
+        dur.init = function(str) {
+            this.str = str;
+        }
+        dur.start = function() {
+            this.times = (new Date).valueOf();
+        };
+        dur.end = function() {
+            this.usedTimes = (new Date).valueOf() - this.times;
+        };
+        dur.getTime=function(){
+            return this.str+','+this.usedTimes + "MS";
+        }
+        dur.print = function() {
+            var oDiv = document.createElement("div");
+            var bodyDiv = document.createElement("div");
+            oDiv.innerHTML = this.str;
+            bodyDiv.innerHTML = this.usedTimes + "MS";
+            document.body.appendChild( oDiv );
+            document.body.appendChild( bodyDiv );
+        };
+    });
+</script>
+</html>

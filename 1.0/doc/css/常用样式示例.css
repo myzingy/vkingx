@@ -1,0 +1,17 @@
+@charset "utf-8";
+/* CSS Document */
+{
+padding:0px 0 0 0;/* 分别是上右下左的内边距*/
+margin:0px 0 0 0;/* 分别是上右下左的外边距*/
+position:absolute;/* 绝对定位，如果父级元素为相对定位则绝对定位起点left 0，top 0是父级元素的left及top*/
+position:relative;/* 相对定位*/
+float:left;
+background:url(file:///D|/xampp/htdocs/APE_JSF/5522/333) #000000 no-repeat 0px 0px;
+border:#000000 solid 1px;
+clear:both;
+cursor:pointer;/* 鼠标为手形*/
+font-weight:bold;/* 字体加粗*/
+text-decoration:none;/* 字体没有修饰*/
+overflow:hidden;/* 超出部分隐藏*/
+}
+

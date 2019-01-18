@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>treeview 扩展 PHP趣味程序 T-800@vking</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="css/jquery.treeview.css"/>
+<script type="text/javascript" src="http://t.800shang.com/images/js/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.treeview.js"></script>
+<script type="text/javascript">
+$(function(){
+	$("#tree").treeview({
+		url:'tree.json' //JSON地址
+		,click:function(i){alert($(i).attr('xtype'))} //点击事件
+		,openid:2 //默认打开ID
+		,field:{xtype:'type',href:'#ff:id'} //为A标签构造参数
+		,firstview:{field:'type',value:'router'}	//显示的顶级元素
+		,errorid:[26,6,30,50]
+	});
+});
+</script>
+</head>
+<body>
+可以直接传递json地址或json数据，可以定制单击事件及默认展开树节点
+<pre>
+$("#tree").treeview({
+		url:'tree.json' //JSON地址
+        ,data: json	    //json数据，以data数据为主，url为辅
+		,click:function(i){alert($(i).attr('xtype'))} //点击事件,此处的i为a连接
+		,openid:49 //默认打开ID
+        ,field:{xtype:'type',href:'#g:id'} //为A标签构造参数，前者为A标签属性名，后者为json数据字段名
+        									//特别注意href的写法，：前是固定值，后面是json数据字段名
+        ,firstview:{field:'type',value:'router'}	//显示的顶级元素
+        ,errorid:array //错误设备id 数组格式
+        ,errorClass:'errorexp' //错误样式id
+	});
+</pre>
+<div id="tree" style="width:250px; border:#999999 1px solid">tree</div>
+</body>
+</html>

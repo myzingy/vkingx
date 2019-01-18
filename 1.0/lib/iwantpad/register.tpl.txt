@@ -1,0 +1,14 @@
+http://my.weke.com/emailReg.action
+######
+Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Content-Type:application/x-www-form-urlencoded
+Origin:http://my.weke.com
+Referer:http://my.weke.com/reg.html
+Cookie:USERTRACEID=e3fb3023b6f14ab1b2bf5b3fea6e731a; Hm_lvt_91dc55201d5fa054a868aa1e0f20332a=1378862673; Hm_lpvt_91dc55201d5fa054a868aa1e0f20332a=1378862854; JSESSIONID={JSESSIONID}; CNZZDATA5583512=cnzz_eid%3D671636339-1383294621-http%253A%252F%252Fmy.weke.com%26ntime%3D1383815249%26cnzz_a%3D2%26sin%3Dhttp%253A%252F%252Fzt.weke.com%252Fzt%252F1111%252F%26ltime%3D1383815253838%26rtime%3D1; _cnzz_CV=; in_u={in_u}; randCode=sTD2H_60Mak.
+User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36
+######
+userRQuery.email:{USERNAME}@{MAIL}.com
+userRQuery.pwd:123456
+userRQuery.nick:{NICKNAME}
+verifyCode:7245
+spreadSource:

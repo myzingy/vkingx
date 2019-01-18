@@ -1,0 +1,20 @@
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=8352c689837d1851c273bd74ffb0da01&callback=init_amap"></script>
+<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=B6ABZ-XEVW3-OWD3N-36OMV-JPS33-FTFUR&libraries=convertor&callback=init_qqmap"></script>
+<div id="iCenter" style="height:200px; width:100%;background: #ccc;">amap.com</div>
+<div id="container" style="height:200px; width:100%;background: #ccc;">qq.com</div>
+<div id="info" style="color: #fff;"></div>
+<script type="text/javascript">
+    seajs.use('src/geo.js?'+Math.random(),function(geo){
+        geo.init();
+    });
+    function init_amap(){
+        seajs.use('src/geo.js?'+Math.random(),function(geo){
+            geo.init_amap();
+        });
+    }
+    function init_qqmap(){
+        seajs.use('src/geo.js?'+Math.random(),function(geo){
+            geo.init_qqmap();
+        });
+    }
+</script>

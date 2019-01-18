@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<title>ExplorerCanvas Example 1</title>
+<style type="text/css">
+@import url("css/canvas.contextMenu.css");
+body{ font-size:12px; }	
+</style> 
+<script type="text/javascript" src="../jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/canvas.js"></script> 
+<script type="text/javascript" src="js/canvas.drag.js"></script>
+<script type="text/javascript" src="js/canvas.contextMenu.js"></script>
+<!--[if IE]><script type="text/javascript" src="js/excanvas_r73.js"></script><![endif]-->
+
+<script type="text/javascript"> 
+var D;
+var line=[];
+var img_w=96,img_h=72;
+var img_w2=48,img_h2=36;
+//var I;
+$(function(){
+	document.getElementById('cv').width=1000;
+	document.getElementById('cv').height=600;
+	D=new canvas('cv');
+	var img=new Image();
+	var moveFlag=false;
+	D.set({strokeStyle:"#FF0000",fillStyle:"#ff5533"});
+	for(var i=0,j=1;i<5*Math.PI;i+=5*Math.PI/(j+23),j++){	
+ 		D.set({strokeStyle:"rgb(0,"+(j*10)+",0)",fillStyle:"rgb("+(j*10)+",0,0)"});
+ 		var x= D.width/2 +Math.cos(i)*(i*20+80);
+ 		var y= D.height/2 +Math.sin(i)*(i*20+80);
+ 		line.push(D.line(D.width/2,D.height/2,x,y));
+ 		img=new Image();
+		img.src='images/Router.png';
+		img.title='R 192.168.1.'+j;
+		img.ip='192.168.1.'+j;
+		D.image(img,x-img_w2,y-img_h2,img_w,img_h);
+ 	}
+	
+	img=new Image();
+ 	img.src='images/Switch.png';
+	img.title='S 192.168.1.0';
+	img.ip='192.168.1.0';
+	D.set({strokeStyle:"#0000FF",fillStyle:"#0000ff"});
+	D.image(img,D.width/2-img_w2,D.height/2-img_h2,img_w,img_h);
+	
+	$(D.cvs).canvasDrag(D,{
+		'movefun':function(event,I){
+			_xy=getMouseXY(event);
+			if(I){
+				//移动元素
+				
+				D.moveGraph({'x':_xy.x-D.pos.left,'y':_xy.y-D.pos.top},I);
+				if(I==D.play.length-1){
+					var x1=D.play[I].data.x+img_w2*D.scale.x;
+					var y1=D.play[I].data.y+img_h2*D.scale.y;
+					for(var m=0;m<line.length;m++){
+						D.setGraphXY({'x1':x1,'y1':y1},line[m]);
+					}
+				}else{
+					D.setGraphXY({'x2':D.play[I].data.x+img_w2*D.scale.x,'y2':D.play[I].data.y+img_h2*D.scale.y},I-1);
+				}
+			}else{
+				//移动画布
+				return;
+				D.moveCanvas(_xy.x,_xy.y);
+			}
+			D.clear();
+			D.display();
+		}
+		,'leftfun':function(event,I){
+			if(!I) return;
+			alert(D.play[I].data.imageURL.ip);
+		}
+		,'rightfun':function(event,I){
+			if(!I) return;
+			$(D.cvs).contextMenu(event,{
+					menu: 'xTreeMenu'
+				},function(action, el, pos){
+					alert(action+","+ el+","+ pos);
+				}
+			);
+		}
+	});
+	
+	$("input").click(function(){
+		switch(this.value){
+			case '缩 小':
+				D.scaleCanvas(0.9,0.9);
+			break;
+			case '放 大':
+				D.scaleCanvas(1.1,1.1);
+			break;	
+		}
+		D.clear();
+		D.display();
+	});
+	
+});
+</script> 
+<style> 
+body {
+	background-color:#000000;
+	margin:0;
+	padding:0;
+	text-align:center;
+}
+#cv{
+	background-color:#FFFFFF;
+}
+</style> 
+</head> 
+<body>
+
+<canvas id="cv"></canvas>
+
+<div style="padding-top:10px; color:#FFFFFF;"> 
+<input type="button" value="缩 小" /> 
+<input type="button" value="放 大" /> 
+</div>
+<!-- tree menu -->
+<ul id="xTreeMenu" class="contextMenu">
+    <li class="performance"><a url="network_flow.html" mid="P0" href="#performance">Performance</a></li>
+    <li class="configuration separator"><a url="device_configuration.html" mid="C0" href="#configuration">Configuration</a></li>
+    <li class="delete separator"><a href="#delete">Delete</a></li>
+</ul> 
+</body> 
+</html>

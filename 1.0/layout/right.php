@@ -1,0 +1,1 @@
+<? in(FF."tpl/{$view}.tpl.php"); ?>

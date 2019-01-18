@@ -1,0 +1,77 @@
+var G=[
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		
+		
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		
+		
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		
+		
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		
+		
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		
+		
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]},
+		{"name":"","yao":[]}	
+	];

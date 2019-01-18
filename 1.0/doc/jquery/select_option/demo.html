@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>treeview 扩展 PHP趣味程序 T-800@vking</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="css/jquery.treeview.css"/>
+<script type="text/javascript" src="http://t.800shang.com/images/js/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.options.js"></script>
+<script type="text/javascript">
+$(function(){
+	//显示js 到 code
+	$("#code").html($("script:last").html());
+});
+</script>
+<script type="text/javascript">
+$(function(){
+	//方式1,使用data,数据的键值是对应关系
+	$("#se1").option({
+		data:{"1":"key-option1","2":"key-option2","3":"key-option3","4":"key-option4","5":"key-option5"},
+		selectedValue:3,
+		nofield:true
+	});
+	
+	//方式2,使用data,数据的键值无对应关系
+	$("#se2").option({
+		data:[{"key":1,"value":"option1"},{"key":2,"value":"option2"},{"key":3,"value":"option3"},{"key":4,"value":"option4"},{"key":5,"value":"option5"}],
+		field:{value:'key',text:'value'}
+	}).option({selectedValue:3});
+	
+	//方式3,使用url加载json数据
+	$("#se3").option({
+		url:"options2.json",
+		disabled:true,
+		selectedValue:3,
+		nofield:true
+	});
+	$("#se4").option({
+		url:"options.json",
+		multiple:true,
+		size:5,
+		selectedValue:4,
+		field:{value:'key',text:'value'}
+	});
+});
+</script>
+</head>
+<body>
+<pre id="code"></pre>
+<fieldset>
+	<legend>方式1,使用data,数据的键值是对应关系</legend>
+	<select id="se1"></select>
+</fieldset>
+<fieldset>
+	<legend>方式2,使用data,数据的键值无对应关系</legend>
+	<select id="se2"></select>
+</fieldset>
+<fieldset>
+	<legend>方式3,使用url加载json数据</legend>
+	<select id="se3"></select>
+	<br/>&nbsp;<br/>
+	<select id="se4"></select>
+</fieldset>
+</body>
+</html>

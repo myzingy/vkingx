@@ -1,0 +1,18 @@
+helper中加入
+function load_view_lib($lib_name,$params=NULL) {
+    $CI = &get_instance();
+    $data["params"]=$params;
+    $CI->load->view($CI->config->item('travelin_template_libs') . $lib_name,$data);
+}
+$config['travelin_template_libs']需要定义
+
+调用方式view层直接写
+<?php
+unset($params);
+$params['upload_url']=site_url("travel/upload_api/app_photo/$app_id");
+$params['file_post_name']='userfile';
+$params['file_size_limit']='5 MB';
+$params['file_types']='*.jpg;*.png;*.gif;*.jpeg'; 
+load_view_lib("swfupload",$params);
+?>
+相关块文件swfupload.php

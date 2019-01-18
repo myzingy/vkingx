@@ -1,0 +1,409 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8人过河 过河游戏 AI.html</title>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript">
+if(typeof window.console == 'undefined'){window.console={'log':function(){},'error':function(){}}}
+Array.prototype.indexOf=function(value){for(var i=0,l=this.length;i<l;i++)if(this[i]==value)return i;return -1;};
+var World=function(peoples,chuan){
+	this.worldStatus=[];
+	this.peoples=peoples;
+	this.chuan=chuan;
+	this.saveStatus();
+}
+World.prototype.saveStatus=function(){
+	var str=[];
+	var peoples=this.peoples;
+	var worldStatus=this.worldStatus;
+	var xflag=true; //船在岸边为真，船在河中为假
+	for (var i = 0; i < peoples.length; i++) {
+		str.push(peoples[i].tmpPos);
+		if(peoples[i].tmpPos==0){
+			xflag=false;
+		}
+	}
+	str.push(this.chuan.pos);
+	str=str.toString();
+	for(var i=0;i<worldStatus.length;i++){
+		if(str==worldStatus[i].key) return -1;
+	}
+	this.worldStatus.push({key:str,flag:true,num:0,xflag:xflag});
+	return worldStatus.length-1;
+}
+World.prototype.setNowStatusFlag=function(nowIndex,flag){
+	nowIndex=(typeof nowIndex=='undefined')?this.worldStatus.length-1:nowIndex;
+	flag=(typeof flag=='undefined')?false:flag;
+	this.worldStatus[nowIndex].flag=flag;
+}
+World.prototype.revertStatus=function(nowIndex){
+	this.chuan.delPeople();
+	var worldStatus=this.worldStatus
+	var peoples=this.peoples;
+	var str=worldStatus[this.findLastStatus(nowIndex)].key;
+	var status=str.split(",");
+	for (var i = 0; i < peoples.length; i++) {
+		this.peoples[i]['pos']=status[i];
+		this.peoples[i]['tmpPos']=status[i];
+		if(status[i]==0){
+			this.chuan.addPeople(this.peoples[i]);
+		}
+		if(this.peoples[i].pos==-1){
+			$("#"+peoples[i].name).appendTo('#left').removeClass('killer');
+		}else if(this.peoples[i].pos==0){
+			$("#"+peoples[i].name).appendTo('#center').removeClass('killer');
+		}else{
+			$("#"+peoples[i].name).appendTo('#right').removeClass('killer');
+		}
+	}
+	chuan.pos=status[peoples.length];
+	//console.log("回滚现状："+this.show());
+}
+World.prototype.findLastStatus=function(nowIndex){
+	var worldStatus=this.worldStatus;
+	var i=worldStatus.length-1;
+	var peoplesL=this.peoples.length;
+	if(typeof nowIndex=='undefined'){
+		for(;i>0;i--){
+			if (worldStatus[i].flag && worldStatus[i].xflag && worldStatus[i].num <peoplesL ) {
+				this.worldStatus[i].num+=1;
+				return i;
+			}
+		}
+	}else{
+		var lsk=worldStatus[nowIndex].key.split(',')[peoplesL];
+		for(;i>0;i--){
+			var _lsk=worldStatus[i].key.split(',')[peoplesL];
+			if (worldStatus[i].flag && worldStatus[i].xflag && worldStatus[i].num <17 && _lsk!=lsk) {
+				this.worldStatus[i].num+=1;
+				return i;
+			}
+		}
+	}
+	//console.log(0);
+	return 0;
+}
+World.prototype.isKill=function(){
+	var peoples=this.peoples;
+	for(var i =0 ;i<peoples.length;i++){
+		var index=peoples[i].doKill(peoples);
+		if (index > -1) {
+			$('#'+peoples[i].name).addClass('killer');
+			$('#'+peoples[index].name).addClass('killer');
+			return true;
+		}
+	}
+	return false;
+	
+}
+World.prototype.gameOver=function(){
+	var peoples=this.peoples;
+	for (var i = 0; i < peoples.length; i++) {
+		if(peoples[i].tmpPos!=1) return false;
+	}
+	return true;
+}
+World.prototype.show=function(){
+	var status={};
+	status[-1]=[];
+	status[0]=[];
+	status[1]=[];
+	var peoples=this.peoples;
+	for (var i = 0; i < peoples.length; i++) {
+		status[peoples[i].tmpPos].push(peoples[i].name);
+	}
+	return "左岸:"+status[-1].toString()+"\t\t\t\t船上："+status[0].toString()+"\t\t右岸："+status[1].toString();
+}
+World.prototype.display = function(key){
+	key=key.split(',');
+	var keyLength=key.length;
+	var peoples=this.peoples;
+	var str={};
+	str[-1]=[];
+	str[1]=[];
+	for(var i=0;i<keyLength-1;i++){
+		str[key[i]].push(peoples[i].name);
+	}
+	return ("左岸："+str[-1].toString()+"┃右岸："+str[1].toString()+"┃船在"+(key[keyLength-1]==-1?'左':'右')+"岸"+'<br/>');
+}
+World.prototype.displayGUI = function(){
+	var peoples=this.peoples;
+	var worldStatus=this.worldStatus;
+	var i=worldStatus.length-1;
+	var lsk=worldStatus[i].key.split(',');
+	for (i = 0; i < peoples.length; i++) {
+		if(lsk[i]==-1){
+			$("#"+peoples[i].name).appendTo('#left');
+		}else if(lsk[i]==0){
+			$("#"+peoples[i].name).appendTo('#center');
+		}else{
+			$("#"+peoples[i].name).appendTo('#right');
+		}
+	}
+	$('#Cruises').appendTo(lsk[peoples.length]==1?'#right':'#left');
+}
+//////////////////////////////////////////////////////////////
+var Cruises=function(){
+	this.pos=-1;
+	this.peoples=[];
+	$('<div id="Cruises" class="Cruises">豪华游轮<div>').appendTo('#left');
+}
+Cruises.prototype.addPeople=function(people){
+	if(this.peoples.length>1) return false;
+	people.tmpPos=0;
+	this.peoples.push(people);
+	
+	//$("#"+people.name).appendTo('#center');
+	return true;
+}
+Cruises.prototype.dock=function(){
+	var peoples=this.peoples;
+	this.pos=-this.pos;
+	for(var i=0;i<peoples.length;i++){
+		this.peoples[i].tmpPos=this.pos;
+		this.peoples[i].pos=this.pos;
+		if(this.peoples[i].pos==-1){
+			$("#"+peoples[i].name).appendTo('#left');
+		}else if(this.peoples[i].pos==0){
+			$("#"+peoples[i].name).appendTo('#center');
+		}else{
+			$("#"+peoples[i].name).appendTo('#right');
+		}
+	}
+	
+	this.peoples=[];
+}
+Cruises.prototype.delPeople=function(){
+	for(var i=0;i<this.peoples.length;i++){
+		this.peoples[i].tmpPos=this.peoples[i].pos;
+	}
+	this.peoples=[];
+}
+//////////////////////////////////////////////////////////////
+var People=function(name){
+	this.pos=-1;
+	this.tmpPos=-1;
+	this.name=name;
+	$('<div id="'+name+'" class="people">'+name+'<div>').appendTo('#left');
+}
+People.prototype.boating=function(){
+	this.boat=true;
+}
+People.prototype.isBoat=function(){
+	return (typeof this.boat=='undefined')?false:true;
+}
+People.prototype.killer=function(killers,nokill){
+	this.killers=killers;
+	this.nokill=nokill;
+}
+People.prototype.isKiller=function(){
+	return (typeof this.nokill=='undefined')?false:true;
+}
+People.prototype.doKill=function(peoples){
+	if (!this.isKiller()) return -1;
+	if(this.nokill.tmpPos==this.tmpPos) return -1;
+	for(var i=0;i<peoples.length;i++){
+		if (this.killers.indexOf(peoples[i]) > -1 && this.tmpPos == peoples[i].tmpPos) {
+			return i;
+		}
+	}
+	return -1;
+}
+//////////////////////////////////////////////////////////////
+function twoGo(){
+	var flag=false;
+	var nowIndex;
+	var peoples=world.peoples;
+	//chuan.delPeople();
+	for(var i =0; i<peoples.length;i++){
+		for (var j = 0; j < peoples.length; j++) {
+			if (peoples[i].tmpPos==chuan.pos && peoples[j].tmpPos==chuan.pos) {
+				if (peoples[i].isBoat() || peoples[j].isBoat()) {
+					//chuan.delPeople();
+					chuan.addPeople(peoples[i]);
+					chuan.addPeople(peoples[j]);
+					nowIndex=world.saveStatus();
+					world.displayGUI();
+					if (nowIndex>0 && world.isKill()) {
+						//console.log("世界回滚【登船杀戮】："+world.show());
+						world.setNowStatusFlag(nowIndex,false);
+						chuan.delPeople();
+						//console.log("世界回滚【登船杀戮】："+world.show());
+						continue;
+					}
+					if (nowIndex==-1) {
+						//console.log("世界回滚【重复登船】："+world.show());
+						chuan.delPeople();
+						//console.log("世界回滚【重复登船】："+world.show());
+						continue;
+					}
+					
+					//console.log((chuan.pos==1?'<-':'->')+world.show());
+					chuan.dock();
+					nowIndex=world.saveStatus();
+					world.displayGUI();
+					if (nowIndex>0 && world.isKill()) {
+						//console.log("世界回滚【下船杀戮】："+world.show());
+						world.setNowStatusFlag(nowIndex,false);
+						world.revertStatus(nowIndex);
+						//console.log("世界回滚【下船杀戮】："+world.show());
+						continue;
+					}
+					if (nowIndex==-1){
+						//console.log("世界回滚【重复下船】："+world.show());
+						world.revertStatus();
+						//console.log("世界回滚【重复下船】："+world.show());
+						continue;
+					}
+					console.log(peoples[i].name+','+peoples[j].name+'===>登船:');
+					console.log((chuan.pos==1?'【船在右岸】':'【船在左岸】')+'\t\t'+world.show());
+					return true;
+					
+				}
+				
+			}
+		}
+	}
+	return flag;
+}
+function Go(num){
+	if(interval){
+		clearInterval(interval);
+		$('div','.line').empty();
+	}
+	initGame(num);
+	interval=setInterval(function(){
+		if(world.gameOver()){
+			console.log("游戏结束："+world.show());
+			console.log("=======================================================");
+			var msg='';
+			for(var i=0,j=0;i<world.worldStatus.length;i++){
+				if (world.worldStatus[i].flag && world.worldStatus[i].xflag && world.worldStatus[i].num < world.peoples.length-1) {
+					msg+="["+(j++)+"]"+world.display(world.worldStatus[i].key);
+				}
+			}
+			$('#gameinfo').html(msg);
+			clearInterval(interval);
+			return;
+		}
+		if(!twoGo()){
+			world.revertStatus();
+			twoGo();
+		}
+	},1000);
+}
+var chuan,world,interval;
+function initGame(num){
+	chuan=new Cruises();
+	switch(num){
+		case 4:
+			var nongfu=new People("猎人");
+			var baicai=new People("白菜");
+			var yang=new People("绵羊");
+			var lang=new People("野狼");
+			lang.killer([yang],nongfu);
+			yang.killer([baicai],nongfu);
+			nongfu.boating();
+			world=new World([nongfu,baicai,yang,lang],chuan);
+		break;
+		case 5:
+			var lieren=new People("猎人");
+			var nongfu=new People("农夫");
+			var baicai=new People("白菜");
+			var yang=new People("绵羊");
+			var lang=new People("野狼");
+			yang.killer([baicai],nongfu);
+			lang.killer([yang,nongfu],lieren);
+			nongfu.boating();
+			lieren.boating();
+			world=new World([lieren,nongfu,baicai,yang,lang],chuan);
+		break;
+		case 6:
+			var lieren=new People("猎人");
+			var nongfu=new People("农夫");
+			var baicai=new People("白菜");
+			var yang=new People("绵羊");
+			var lang=new People("野狼");
+			var gou=new People("猎狗");
+			yang.killer([baicai],nongfu);
+			lang.killer([yang,nongfu],lieren);
+			gou.killer([lang],lieren);
+			nongfu.boating();
+			lieren.boating();
+			world=new World([lieren,nongfu,baicai,yang,lang,gou],chuan);
+		break;
+		case 8:
+			var jingcha=new People("警察");
+			var nver1=new People("大女儿");
+			var nver2=new People("小女儿");
+			var erzi1=new People("大儿子");
+			var erzi2=new People("小儿子");
+			var baba=new People("爸爸");
+			var mama=new People("妈妈");
+			var zuifan=new People("杀人犯");
+			baba.boating();
+			mama.boating();
+			jingcha.boating();
+			baba.killer([nver1,nver2],mama);
+			mama.killer([erzi1,erzi2],baba);
+			zuifan.killer([erzi1,erzi2,nver1,nver2,baba,mama],jingcha);
+			world=new World([baba,mama,zuifan,jingcha,erzi1,erzi2,nver1,nver2],chuan);
+		break;
+	}
+	world.saveStatus();
+}
+//////////////////////////////////////////////////////////////
+</script>
+<style type="text/css">
+	body{ font-size:12px; padding:0; margin:0;}
+	.gameinfo{ background-color:#005896; color:#ffffff; border:10px solid #1168a7; margin-bottom:10px; padding:10px; }
+	#left{ width:100px; float:left; background-color:#FFFF00; color:#0000FF; height:200px;}
+	#center{ width:100px; float:left; background-color:#1168a7; color:#00ff00;height:200px;}
+	#right{ width:100px; float:left; background-color:#009900; color:#ff0000;height:200px;}
+	.line{ width:50%; float:left;}
+	.people,.Cruises{ width:100%; text-align:center; padding:2px 0px; margin-bottom:5px; background-color:#FFEEDD; }
+	.Cruises{background-color:#000000; color:#ffffff;}
+	/*.killer{background-color:#ff0000;color:#ffffff;}*/
+</style>
+</head>
+<body>
+<div class="gameinfo">
+    <div class="line">
+        <div id="left">
+        </div>
+		<div id="center">
+        </div>
+        <div id="right">
+        </div>
+        <br style="clear:both;"/>
+    </div>
+    <div class="line">
+    	<div id="gameinfo"></div>
+    </div>
+    <br style="clear:both;"/>
+</div>
+<div class="gameinfo">现有一条河，共有八个人要过河，分别是爸爸，妈妈，两个儿子，两个女儿，一个警察，一个犯人．现有一条木伐，一次最多载两个人，在这八个人中，有妈妈，爸爸，警察会开船，即这个船上必须有爸爸，妈妈，警察三个中的一个，船才会开动．船过去无法自动回来．
+	<br>并且要避免以下事件发生:
+	<br>1，警察不在犯人会伤害一家六口．
+	<br>2，爸爸不在，妈妈会伤害儿子．
+	<br>3，妈妈不在，爸爸会伤害女儿．应当如何过河？
+	<br><input type="button" onclick="Go(8)" value="八人过河 AI"/>
+</div>
+<div class="gameinfo">现有一条河一条船，<font color="red">猎人、狼、菜、羊</font>要過河，船只有两座，只有农夫会掌舵，如果猎人和其它三样没在一起会发生狼吃羊，羊吃菜的情况，请帮农夫无损过河。
+	<br><input type="button" onclick="Go(4)" value="四人过河 AI"/>
+</div>
+<div class="gameinfo">现有一条河一条船，<font color="red">猎人、农夫、狼、菜、羊</font>要過河，船只有两座，只有农夫、猎人会掌舵，请帮他们无损过河。
+	<br>并且要避免以下事件发生:
+	<br>1，如果猎人不在狼会吃农夫和羊。
+	<br>2，如果农夫不在羊会吃菜。
+	<br><input type="button" onclick="Go(5)" value="⑤人过河 AI"/>
+</div>
+<div class="gameinfo">现有一条河一条船，<font color="red">猎人、农夫、野狼、猎狗、白菜、羊</font>要過河，船只有两座，只有农夫、猎人会掌舵，请帮他们无损过河。
+	<br>并且要避免以下事件发生:
+	<br>1，如果猎人不在狼会吃农夫和羊，猎狗会吃狼。
+	<br>2，如果农夫不在羊会吃菜。
+	<br><input type="button" onclick="Go(6)" value="六人过河 AI"/>
+</div>
+</body>
+</html>

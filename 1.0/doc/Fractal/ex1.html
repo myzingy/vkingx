@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>ExplorerCanvas Example 1</title>
+        <script type="text/javascript" src="jquery-1.4.2.min.js">
+        </script>
+        <script type="text/javascript" src="canvas3.js">
+        </script>
+        <!--[if IE]><script type="text/javascript" src="excanvas_r73.js"></script><![endif]-->
+        <script type="text/javascript">
+            var D;
+            var width, height;
+            var maxIterations = 20;
+            var minRe = -2.0;
+            var maxRe = 1.0;
+            var minIm = -1;
+            var maxIm;
+            var animate;
+			var step=5;
+            $(function(){
+                D = new canvas('canvas');
+                width = D.width;
+                height = D.height;
+                maxIm = minIm + (maxRe - minRe) * height / width;
+                draw();
+                D.cvs.onmousedown = function(evt){
+                    var x0 = evt.pageX - D.cvs.offsetLeft;
+                    var y0 = evt.pageY - D.cvs.offsetTop;
+                    
+                    var x1, y1, w, h;
+                    var imgd = D.ctx.getImageData(0, 0, width, height);
+                    
+                    update(evt);
+                    
+                    function update(evt){
+                        x1 = evt.pageX - D.cvs.offsetLeft;
+                        y1 = evt.pageY - D.cvs.offsetTop;
+                        w = Math.abs(x1 - x0), h = Math.abs(y1 - y0);
+						//h=w;
+						
+                    }
+                    
+                    function clear(evt){
+                        if (w && h) {
+                            D.clear();
+                            D.ctx.putImageData(imgd, 0, 0);
+                        }
+                    }
+                    
+                    D.cvs.onmousemove = function(evt){
+                        clear(evt);
+                        update(evt);
+                        D.set({
+                            "strokeStyle": "red"
+                        });
+                        D.rect(x0 < x1 ? x0 : x1, y0 < y1 ? y0 : y1, w, h);
+                    }
+                    
+                    D.cvs.onmouseup = function(evt){
+                        clear(evt);
+                        D.cvs.onmousemove = D.cvs.onmouseup = null;
+                        
+                        minRe = minRe + (maxRe - minRe) / width * (x0 < x1 ? x0 : x1);
+                        maxRe = minRe + (maxRe - minRe) / width * w;
+                        minIm = minIm + (maxIm - minIm) / height * (y0 < y1 ? y0 : y1);
+                        maxIm = minIm + (maxIm - minIm) / height * h;
+                        
+                        draw();
+                    }
+                };
+                $('#reset').click(function(){
+                    minRe = -2.0;
+                    maxRe = 1.0;
+                    minIm = -1;
+                    maxIm = minIm + (maxRe - minRe) * height / width;
+					
+                    draw();
+                });
+            });
+            function draw(){
+                /*
+				D.set({
+                    "fillStyle": "rgba(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ",75)"
+                });
+                */
+				D.set({
+                    "fillStyle": "rgba(30,90,150,15)"
+                });
+                D.rect(0, 0, width, height, true);
+                
+				//var imgd = D.ctx.getImageData(0, 0, width, height);
+                //var pix = imgd.data;
+                var drawPixel = function(x, y, itr){
+                    //var i = (y * width + x) * 4;
+                    //pix[i] = pix[i + 1] = pix[i + 2] = pix[i + 3]=Math.round(itr * 255 / maxIterations);
+					D.circle(x,y,1);
+                }
+				//animate=setInterval("mandelbrot2("+width+", "+height+");",1);
+                mandelbrot(width, height, drawPixel);
+                //D.ctx.putImageData(imgd, 0, 0);
+            }
+			var x=1,y=1,n=1;
+			var z_im=false,z_re;
+			var _x=false;
+            function mandelbrot2(imageWidth, imageHeight){
+                var re_factor = (maxRe - minRe) / (imageWidth - 1);
+                var im_factor = (maxIm - minIm) / (imageHeight - 1);
+				if(n<maxIterations){
+					n+=step;
+				}else{
+					n=1;
+					if(x<imageWidth){
+						x+=step;
+					}else{
+						x=1;
+						if(y<imageHeight){
+							y+=step;
+						}else{
+							clearInterval(animate);
+							alert("over");
+						}
+					}
+				}
+				//console.log(n,x,y);
+				var c_im = maxIm - y * im_factor;
+				
+				var c_re = minRe + x * re_factor;
+				if((!z_im && !_x) || (_x && _x!=x)){
+					z_re = c_re, z_im = c_im;
+					_x=x;
+				}
+				
+				
+				var z_re2 = z_re * z_re, z_im2 = z_im * z_im;
+				if (z_re2 + z_im2 > 4) {
+					D.set({
+                    "fillStyle": "rgb(0,0,0)"
+                });
+					D.circle(x,y,step,true);
+				}else{
+					z_im = 2 * z_re * z_im + c_im;
+                    z_re = z_re2 - z_im2 + c_re;
+				}
+            }
+            
+            function mandelbrot(imageWidth, imageHeight, drawPixel){
+                var re_factor = (maxRe - minRe) / (imageWidth - 1);
+                var im_factor = (maxIm - minIm) / (imageHeight - 1);
+                for (var y = 0; y < imageHeight; ++y) {
+                    var c_im = maxIm - y * im_factor;
+                    for (var x = 0; x < imageWidth; ++x) {
+                        var c_re = minRe + x * re_factor;
+                        
+                        var z_re = c_re, z_im = c_im;
+                        var isInside = true;
+                        var n = 0;
+                        for (; n < maxIterations; ++n) {
+                            var z_re2 = z_re * z_re, z_im2 = z_im * z_im;
+                            if (z_re2 + z_im2 > 4) {
+                                isInside = false;
+                                break;
+                            }
+                            z_im = 2 * z_re * z_im + c_im;
+                            z_re = z_re2 - z_im2 + c_re;
+                        }
+                        
+                        if (!isInside) {
+                            drawPixel(x, y, n);
+                        }
+                    }
+                }
+            }
+            
+        </script>
+    </head>
+    <body>
+        <canvas id="canvas" width="800" height="680" style="" title="canvas">
+            <p>
+                Your browser does not support the canvas element.
+            </p>
+        </canvas>
+        <p>
+            <input id="reset" type="button" value="Reset" />
+        </p>
+    </body>
+</html>

@@ -1,0 +1,64 @@
+<?php
+/**
+$params['upload_url']='...';
+$params['file_post_name']='...';
+$params['file_size_limit']='...'; // 1 MB
+$params['file_types']='...'; //*.jpg;*.png;*.gif
+**/
+$rand_str=substr(md5($params['upload_url']),0,8);
+$params['progressTarget']=empty($params['progressTarget'])?"progress_{$rand_str}":$params['progressTarget'];
+$params['cancelButtonId']=empty($params['cancelButtonId'])?"cancel_{$rand_str}":$params['cancelButtonId'];
+$params['button_placeholder_id']=empty($params['button_placeholder_id'])?"button_{$rand_str}":$params['button_placeholder_id'];
+$params['swfu']=empty($params['swfu'])?"swtu_{$rand_str}":$params['swfu'];
+$params['file_types_description']=empty($params['file_types_description'])?"All Files":$params['file_types_description'];
+$params['file_upload_limit']=empty($params['file_upload_limit'])?10:$params['file_upload_limit'];
+$params['file_queue_limit']=empty($params['file_queue_limit'])?2:$params['file_queue_limit'];
+$params['button_text']=empty($params['button_text'])?"select file":$params['button_text'];
+?>
+<div class="fieldset flash" id="<?=$params['progressTarget'];?>">
+  <div id="divStatus">0 Files Uploaded&nbsp;&nbsp;&nbsp;&nbsp;<font color="#CC3300">Only one map can be uploaded</font></div>
+  <div style="float:left;border:1px solid #999999; width:70px;"><span id="<?=$params['button_placeholder_id'];?>"></span></div>
+  <input id="<?=$params['cancelButtonId'];?>" type="button" value="Cancel All Uploads" onclick="<?=$params['swfu'];?>.cancelQueue();" disabled="disabled" style="font-size:8pt; float:left; height:21px;" />
+  <div style="clear:both"></div>
+  <script type="text/javascript">
+  <!--//
+  var settings_<?=$rand_str;?> = {
+		flash_url : "<?=base_url()?>assets/shared/js/swfupload.swf",
+		upload_url: "<?=$params['upload_url'];?>",
+		post_params: {"<?=$cookie_name?>" : '<?=$cookie_value?>' },
+		file_post_name: "<?=$params['file_post_name'];?>",
+		file_size_limit : "<?=$params['file_size_limit'];?>",
+		file_types : "<?=$params['file_types'];?>",
+		file_types_description : "<?=$params['file_types_description'];?>",
+		file_upload_limit : <?=$params['file_upload_limit'];?>,
+		file_queue_limit : <?=$params['file_queue_limit'];?>,
+		custom_settings : {
+			progressTarget : "<?=$params['progressTarget'];?>",
+			cancelButtonId : "<?=$params['cancelButtonId'];?>"
+		},
+		debug: false,
+
+		// Button settings
+		button_width: "60",
+		button_height: "20",
+		button_placeholder_id: "<?=$params['button_placeholder_id'];?>",
+		button_text: '<span style="color:#333;"><?=$params['button_text'];?></span>',
+		button_text_style: ".theFont { font-size: 16; }",
+		button_text_left_padding: 10,
+		button_text_top_padding: 0,
+		
+		// The event handler functions are defined in handlers.js
+		file_queued_handler : fileQueued,
+		file_queue_error_handler : fileQueueError,
+		file_dialog_complete_handler : fileDialogComplete,
+		upload_start_handler : uploadStart,
+		upload_progress_handler : uploadProgress,
+		upload_error_handler : uploadError,
+		upload_success_handler : uploadSuccess,
+		upload_complete_handler : uploadComplete,
+		queue_complete_handler : queueComplete	// Queue plugin event
+	};
+	var <?=$params['swfu'];?>=new SWFUpload(settings_<?=$rand_str;?>);
+  -->
+  </script>
+</div>

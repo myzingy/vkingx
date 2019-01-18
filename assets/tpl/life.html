@@ -1,0 +1,30 @@
+<div class="wrapper">
+    <div class="light"><i></i></div>
+    <hr class="line-left">
+    <hr class="line-right">
+    <div class="main" id="history"></div>
+</div>
+<script type="text/javascript">
+    seajs.use('src/work',function(work){
+        work.init('getLifes');
+    });
+</script>
+<script type="text/html" id="history_tpl">
+    <h1 class="title">{title}</h1>
+    <div class="year">
+        <h2><a href="#">{year}<i></i></a></h2>
+        <div class="list">
+            <ul>
+                {year|func:history_tpl_list}
+            </ul>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="history_tpl_list">
+    <li class="cls">
+        <p class="date">{date}</p>
+        <p class="intro">{intro}</p>
+        <p class="version">{version}</p>
+        <div class="more">{date|func:history_tpl_more}</div>
+    </li>
+</script>

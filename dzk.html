@@ -1,0 +1,270 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>vking.wang</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="keywords" content="vking.wang"/>
+    <meta name="description" content="vking.wang"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="viewport" content="initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="white"/>
+    <style>
+        .box{
+            width: 300px;
+            height: 400px;
+            position: relative;
+            background-color: #ccc;
+            border: 1px solid #000;
+        }
+        .box-ball{
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            background-color: #ff00aa;
+            position: absolute;
+            bottom: 30px;
+            left: 135px;
+        }
+        .box-brick{
+            position: absolute;
+            width: 60px;
+            height:30px;
+        }
+        .box-footer{
+            height: 30px;
+            background-color: #ccc;
+            border-top: 1px solid #000;
+            position: absolute;
+            bottom: 0;
+            width:100%;
+        }
+        .box-footer .box-brick{
+            left:90px;
+            bottom: 0;
+            background-color: #0A246A;
+            width:120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="box-header" id="box-header"></div>
+        <div class="box-ball" id="box-ball"></div>
+        <div class="box-footer">
+            <div class="box-brick" id="box-baffle"></div>
+        </div>
+    </div>
+</body>
+<script>
+    var width=300,height=400,ball_size=30,brick_width=60,brick_height=30,baffle_width=120;
+    var $=function(id){return document.getElementById(id);};
+    /**
+     * 砖块对象
+     */
+    function brick(x1,y1,x2,y2){
+        this.pos={
+            x1:x1,
+            y1:y1,
+            x2:x2,
+            y2:y2
+        };
+        this.state=true;
+    }
+    brick.prototype.touch=function(x,y,ba){
+        if(!this.state) return;
+        var isBaffle=this.pos.y2==height;
+        var bs2=isBaffle?ball_size/2:0;
+        //console.log('brick.prototype.touch',this.pos,x,y);
+        if(x>=this.pos.x1 && x<=this.pos.x2
+        && y>=this.pos.y1-bs2 && y<=this.pos.y2){
+            console.log('brick.prototype.touch'+(isBaffle?'--baffle':''),this.pos,ba);
+            if(ba.xf>0 && ba.yf>0){
+                ba.touch({yf:-1});
+                this.state=isBaffle;
+                return;
+            }
+            if(ba.xf>0 && ba.yf<0){
+                ba.touch({yf:1});
+                this.state=isBaffle;
+                return;
+            }
+            if(ba.xf<0 && ba.yf>0){
+                ba.touch({yf:-1});
+                this.state=isBaffle;
+                return;
+            }
+            if(ba.xf<0 && ba.yf<0){
+                ba.touch({yf:1});
+                this.state=isBaffle;
+                return;
+            }
+        }
+    }
+    /**
+     * 挡板对象
+     */
+    function baffle(){
+    }
+    baffle.prototype=new brick((width-baffle_width)/2,height-brick_height,(width-baffle_width)/2+baffle_width,height);
+    baffle.prototype.initEvent = function () {
+        var that=this;
+        if (navigator.userAgent.indexOf("MSIE") > 0) {
+            //IE
+            document.onkeydown = function (event) {
+                //console.log('ie',arguments);
+                that.move(event.keyCode);
+            }
+        } else {
+            //非IE
+            window.onkeydown = function (event) {
+                //console.log('!ie',arguments);
+                that.move(event.keyCode);
+            }
+        }
+    }
+    baffle.prototype.move=function(code){
+        //console.log('baffle.prototype.move',this,code);
+        var step=brick_width;
+        if (37 == code) { //left
+            var x=this.pos.x1-step;
+            x=x<0?0:x;
+        }
+        if (39 == code) { //right
+            var x=this.pos.x1+step;
+            x=x>width-brick_width*2?width-brick_width*2:x;
+        }
+        this.pos.x1=x;
+        this.pos.x2=x+baffle_width;
+        this.draw();
+    }
+    baffle.prototype.draw=function(){
+        $('box-baffle').style.left=this.pos.x1;
+    }
+    /**
+     * 砖块队列
+     */
+    function bricks(){
+        this.list=[];
+        for(var i=0;i<15;i++){
+            var x1=(i%5)*brick_width;
+            var y1=parseInt(i/5)*brick_height;
+            this.list.push(new brick(x1,y1,x1+brick_width,y1+brick_height));
+        }
+    }
+    bricks.prototype.touch=function(x,y,ba){
+        //console.log('bricks.prototype.touch',this.list);
+        for(var i=0;i<this.list.length;i++){
+            var b=this.list[i];
+            if(!b.state) return;
+            var touch=b.touch(x,y,ba);
+            if(touch){
+                return touch;
+            }
+        }
+    }
+    bricks.prototype.draw=function(){
+        var tpl='<div class="box-brick" style="background-color: {bgColor};left:{x1}px;top:{y1}px; border: 1px solid #ccc;"></div>',html='';
+        for(var i=0;i<this.list.length;i++){
+            var b=this.list[i];
+            html+=tpl.replace(/\{([^\}]+)\}/g,function($0,$1){
+                //console.log('brick.prototype.draw',$0,$1);
+                switch($1){
+                    case 'bgColor':
+                        return b.state?'#ff0000':'#ccc';
+                    case 'x1':
+                        return b.pos.x1;
+                    case 'y1':
+                        return b.pos.y1;
+                }
+            });
+        }
+        $('box-header').innerHTML=html;
+    }
+    /**
+     * 球对象
+     */
+    function ball(){
+        //球初始位置
+        this.x=0;
+        this.y=0;
+        this.xf=1;  //x轴方向
+        this.yf=-1; //y轴方向
+        this.xm=1;  //x轴移动步长
+        this.ym=1;  //y轴移动步长
+        this.state=true;
+        this.bricks=new bricks();
+        this.baffle=new baffle();
+        return this.init();
+    }
+    ball.prototype.init=function(){
+        //球初始位置
+        this.x=(width-ball_size)/2;
+        this.y=height-ball_size-20;
+        this.xf=1;  //x轴方向
+        this.yf=-1; //y轴方向
+        this.xm=2;//parseInt(Math.random()*5)+1;  //x轴移动步长
+        this.ym=3;//parseInt(Math.random()*5)+1;  //y轴移动步长
+        this.state=true;
+        this.baffle.initEvent();
+        return this;
+    }
+    ball.prototype.touch=function(obj){
+        if(typeof obj.xf!='undefined'){
+            this.xf=obj.xf;     //x轴方向
+        }
+        if(typeof obj.yf!='undefined'){
+            this.yf=obj.yf;     //x轴方向
+        }
+    }
+    ball.prototype.running=function(){
+        if(!this.state) return;
+        var x=this.x+this.xf*this.xm;
+        var y=this.y+this.yf*this.ym;
+        //游戏结束
+        if(y>=height){
+            this.state=false;
+            console.log('game over',this);
+            return;
+        }
+        //砖块碰撞
+        this.bricks.touch(x,y,this);
+
+        //挡板碰撞
+        this.baffle.touch(x,y,this);
+
+        //检测边界
+        if(x>=width-ball_size){
+            this.touch({xf:-1});
+        }
+        if(x<=0){
+            this.touch({xf:1});
+        }
+        if(y<=0){
+            this.touch({yf:1});
+        }
+        this.x=x;
+        this.y=y;
+        $('box-ball').style.left=this.x+'px';
+        $('box-ball').style.top=this.y+'px';
+        this.bricks.draw();
+    }
+    /**
+     * 游戏定义
+     */
+    function game(){
+        this.setInterval="";
+        this.baffle=new baffle();
+    }
+    game.prototype.init=function(){
+        if(!this.setInterval){
+            var b=new ball();
+            this.setInterval=setInterval(function () {
+                b.running();
+            },10);
+        }
+
+    }
+    var g=new game();
+    g.init();
+</script>
+</html>

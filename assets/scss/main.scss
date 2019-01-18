@@ -1,0 +1,229 @@
+@charset "utf-8";
+@import "bootstrap_fix";
+@import "base";
+@import "1.0";
+.clearfix {
+  *zoom: 1;
+}
+
+.clearfix:before, .clearfix:after {
+  display: table;
+  content: "";
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+/* content */
+.content {
+  position: relative;
+  width: 1000px;
+  margin: 0 auto;
+}
+
+.content {
+  padding: 50px 0;
+  min-height: 720px;
+  background: #3a3c48 url("../images/log/content-bg.png");
+  width: 100%;
+}
+
+.content .wrapper {
+  position: relative;
+  background: url("../images/log/release-bg.png") no-repeat right top;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.content .light {
+  position: absolute;
+  right: 0px;
+  top: -50px;
+  width: 152px;
+  height: 191px;
+  background: url("../images/log/light-top.png") no-repeat top center;
+}
+
+.content .light i {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  background: url("../images/log/light.png") no-repeat top center;
+}
+
+.content .line-left {
+  position: absolute;
+  left: 0;
+  top: 15px;
+  width: 10px;
+}
+
+.content .line-right {
+  position: absolute;
+  right: 0;
+  top: 15px;
+  width: 50px;
+}
+
+.content .main {
+  background: url(../images/log/line-bg.png) 69px 0 repeat-y;
+}
+
+.content .main .title {
+  position: absolute;
+  line-height: 40px;
+  padding-left: 50px;
+  left: 50px;
+  color: #58a6fb;
+  font-size: 24px;
+  background: url(../images/log/clock.png) left top no-repeat;
+}
+
+.content .main .year {
+  position: relative;
+  z-index: 100;
+}
+
+.content .main .year h2 {
+  width: 36px;
+  display: block;
+  padding-right: 0;
+  font-size: 21px;
+  text-align: right;
+  overflow-wrap: break-word;
+  text-indent: 10px;
+}
+
+.content .main .year h2 a {
+  color: #58a6fb;
+}
+
+.content .main .year h2 i {
+  display: block;
+  position: relative;
+  height: 0;
+  width: 0;
+  left: 35px;
+  top: -28px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #59a7fb transparent transparent transparent;
+  -webkit-transition: .5s;
+  -moz-transition: .5s;
+  -ms-transition: .5s;
+  -o-transition: .5s;
+  transition: .5s;
+  -webkit-transform-origin: 6px 3px;
+  -moz-transform-origin: 6px 3px;
+  -ms-transform-origin: 6px 3px;
+  -o-transform-origin: 6px 3px;
+  transform-origin: 6px 3px
+}
+
+.content .main .year .list {
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+  -webkit-transition: height 1s cubic-bezier(0.025, 0.025, 0.000, 1.115), opacity 1s;
+  -moz-transition: height 1s cubic-bezier(0.025, 0.025, 0.000, 1.115), opacity 1s;
+  -ms-transition: height 1s cubic-bezier(0.025, 0.025, 0.000, 1.115), opacity 1s;
+  -o-transition: height 1s cubic-bezier(0.025, 0.025, 0.000, 1.115), opacity 1s;
+  transition: height 1s cubic-bezier(0.025, 0.025, 0.000, 1.115), opacity 1s
+}
+
+.content .main .year .list ul {
+  bottom: 0;
+}
+
+.content .main .year .list ul li {
+  background: url(../images/log/circle.png) 55px 0px no-repeat;
+  color: #a1a4b8;
+  padding-left: 85px;
+}
+.content .main .year .list ul li p{
+  line-height: 20px;
+}
+
+.content .main .year .list ul li.highlight {
+  background-image: url(../images/log/circle-h.png);
+}
+
+.cls {
+  zoom: 1;
+}
+
+.cls:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+.content .main .year .list ul li.highlight .date, .content .main .year .list ul li.highlight .intro {
+  color: #ec6a13;
+}
+
+.content .main .year .list ul li .date, .content .main .year .list ul li .version {
+  display: block;
+  clear: left;
+  line-height: 24px;
+  text-align: left;
+}
+
+.content .main .year .list ul li .date {
+  font-size: 18px;
+  line-height: 32px;
+  color: #bec1d5
+}
+
+.content .main .year .list ul li .intro, .content .main .year .list ul li .more {
+  display: block;
+  line-height: 24px;
+}
+
+.content .main .year .list ul li .intro {
+  font-size: 18px;
+  line-height: 32px;
+  color: #63d029;
+}
+
+.content .wrapper:first-child .main .year.close h2 i {
+  transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg)
+}
+
+.content .wrapper:first-child .main .year.close .list {
+  opacity: 0;
+  height: 0 !important;
+}
+.header_footer{
+  height: 40px;
+  position: fixed;
+  width:100%;
+  background:#58A6FB;
+
+  font-size: 20px;
+  z-index: 101;
+  opacity:0.75;
+  ul{
+    width:100%;
+    li{
+      width:33.3%;
+      display: block;
+      line-height:40px;
+      height: 40px;
+      float: left;
+      text-align: center;
+    }
+    a{ color:#fff;}
+  }
+}
+.year.close{
+  float: none;
+}

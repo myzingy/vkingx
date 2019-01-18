@@ -1,0 +1,75 @@
+body{
+  background: #f6f6f6;
+}
+.my_icon{
+  width:33px;
+  height:33px;
+  margin: 5px 0;
+  display: block;
+  background-repeat: no-repeat;
+  background-size:100%;
+}
+@for $i from 1 to 4 {
+  .x#{$i} .pp_header{
+    clear: both;
+    min-height: 45px;
+    border-bottom: 1px solid #e6e6e6;
+    li{float: left;width: 60%; line-height: 45px;}
+    li:first-child{width:20%;}
+    li:last-child{width:20%;}
+    .back{
+      @extend .my_icon;
+      background-image:url(../images/ptpx/fanhui@#{$i}x.png);
+    }
+    .title{
+      color:rgb(108,187,86);
+      font-weight:bold;
+      font-size: 20px;
+      width:100%;
+      display: block;
+      text-align: center;
+    }
+  }
+  .x#{$i} .pp_content{
+    padding: 10px;
+    h3{}
+    .item-addtime{}
+    .item-descw100{}
+  }
+  .x#{$i} .pp_footer{
+    min-height: 30px;
+    border-bottom: 1px solid #e6e6e6;
+    border-top: 1px solid #e6e6e6;
+    li{float: left;width: 60%; line-height: 30px;}
+    .left{
+      .dianzan{
+        @extend .my_icon;
+        float: left;
+        background-image:url(../images/ptpx/shoucangyouke@#{$i}x.png);
+        background-size: 30px;
+        width:80px;
+        text-indent: 35px;
+        margin: 0 auto;
+      }
+      .view{
+        @extend .my_icon;
+        float: left;
+        background-image:url(../images/ptpx/liulan@#{$i}x.png);
+        background-size: 30px;
+        text-indent: 35px;
+        width:80px;
+        margin: 0 auto;
+      }
+    }
+    .right{
+      width:40%;
+      .share{
+        @extend .my_icon;
+        float: right;
+        background-image:url(../images/ptpx/fenxiang@#{$i}x.png);
+        background-size: 30px;
+        margin: 0 auto;
+      }
+    }
+  }
+}

@@ -1,0 +1,181 @@
+提要：关于 BackendPro（用了你会发现它是非常棒的，你不用在处理用户及权限）  http://codeigniter.org.cn/forums/thread-1264-1-1.html
+介绍：BackendPro 是一个为 CodeIgniter 开发者设计的控制台，不是像 CMS 般提供现成的系统，它只提供系统的一部份。
+它提供一些会重复性使用的功能，像是认证、权限与管理介面基本的画面。
+使用现有的 PHP 与 CodeIgniter 知识可以藉由 BackendPro 建立完整的网站，你可以更专注在应用本身，而非一些系统管理功能。
+安装：下载 BackendPro 直接覆盖至 CI 根目录
+--------------------------------------------------------------------------------------------------
+正文：在写 model 时，我们经常要对表进行 where 和分页，每次重复的劳动让人难受。
+接触 BackendPro 后，发现它的Base_model中就集成了fetch，insert，update，delete 四种常用方法，我们的分页和 where 也是和这四种一样，
+常用而且也是模型级别的，所以我扩展了Base_model中的方法
+添加了自动 where
+
+function autowhere($fields) {
+	$url_param = $this -> uri -> uri_string();
+	preg_match_all("/([a|o][eoligt]{1,2}-[a-z\.]+)\/([^\/]+)/i", $url_param, $url_xxx);
+	//取url搜索条件
+	if (!$url_xxx)
+		return;
+	$url_param = $url_xxx[1];
+	$url_value = $url_xxx[2];
+	$where = '';
+	foreach ($url_value as $k => $v) {
+		if (!$v) {
+			continue;
+		}
+		if (strpos($v, '%') !== false) {
+			$v = urldecode($v);
+			// 中文转码
+		}
+		$key = $url_param[$k];
+		list($a, $b) = explode('-', $key);
+		if (!in_array($b, $fields)) {
+			continue;
+		}
+		switch($a) { // 下面的语句我就不解释了，where 条件很清楚
+			case "ae" :
+				$this -> db -> where($b, $v);
+				$where .= "\$this->db->where($b,$v);";
+				break;
+			case "oe" :
+				$this -> db -> or_where($b, $v);
+				$where .= "\$this->db->or_where($b,$v);";
+				break;
+			case "al" :
+				$this -> db -> like($b, $v);
+				$where .= "\$this->db->like($b,$v);";
+				break;
+			case "ol" :
+				$this -> db -> or_like($b, $v);
+				$where .= "\$this->db->or_like($b,$v);";
+				break;
+			case "ai" :
+				$v = explode(",", $v);
+				$this -> db -> where_in($b, $v);
+				$where .= "\$this->db->where_in($b,$v);";
+				break;
+			case "agt" :
+				$this -> db -> where("$b >", $v);
+				$where .= "\$this->db->where('$b >',$v);";
+				break;
+			case "alt" :
+				$this -> db -> where("$b <", $v);
+				$where .= "\$this->db->where('$b <',$v);";
+				break;
+			case "oo" :
+				$this -> db -> order_by($b, $v);
+				$where .= "\$this->db->order_by($b,$v);";
+				break;
+		}
+	}
+	return empty($where) ? NULL : $where;
+}
+
+及自动分页
+
+function autopage($datanum, $per_page = 20) {
+	$url_param = $this -> uri -> uri_string();
+	preg_match("/(\/page)\/([^\/]*)/", $url_param, $page);
+	$this -> page = 0;
+	if ($page) {
+		if ($page[2] > 0) {
+			$this -> page = $page[2];
+		}
+		$url_param = str_replace($page[0], "", $url_param);
+	}
+	$this -> load -> library('pagination');
+	$config['base_url'] = base_url() . "/index.php/{$url_param}/page";
+	$config['total_rows'] = $datanum;
+	$config['per_page'] = $per_page;
+	$config['cur_page'] = $this -> page;
+	$this -> pagination -> initialize($config);
+	return $this -> pagination -> create_links();
+}
+
+--------------------------------------------------------------------------------------------------------------
+然后就是在具体的模块里调用了，模块必须继承Base_model，否则无法调用到
+
+class Hotel_model extends Base_model {
+	function Hotel_model()//模块初始化函数，定义初始一些数据
+	{
+		parent::Base_model();
+		$this -> lang -> load('restaurantslib');
+		$this -> _prefix = $this -> config -> item('hotels_table_prefix');
+		$this -> _TABLES = array('U' => $this -> config -> item('backendpro_table_prefix') . 'users', 'HD' => $this -> _prefix . 'data', 'HB' => $this -> _prefix . 'branch', 'HPF' => $this -> _prefix . 'profiles', 'HR' => $this -> _prefix . 'recommend', //推荐
+		'HI' => $this -> _prefix . 'impression', //印象
+		);
+	}
+
+	/**
+	 这个就是获取酒店的函数，我将细细说明。
+	 参数$count为true时,将会返回分页及数据，为false时只返回数据。如果只想取数据，就把此值设置为false。
+	 */
+	function get_hotels($where = NULL, $limit = array('limit' => NULL, 'offset' => ''), $count = false) {
+		$where_fileds = array('name', 'tid');
+		//这里定义你sql语句中允许的where字段，将和url进行比对
+		if (!is_null($where))//这里的where是控制器传递过来的
+		{
+			$this -> db -> where($where);
+		}
+		$autowhere = $this -> autowhere($where_fileds);
+		//调用自动where并返回一个可重用的where从句
+		if ($count) {
+			$this -> db -> select('count(*)', false);
+			$this -> db -> from($this -> _TABLES['HD']);
+			$datarows = $this -> db -> count_all_results();
+			$pagination = $this -> autopage($datarows, $limit['limit']);
+			//调用自动分页，直接返回分页html代码
+		}
+		if (!is_null($where))//因为一次查询后，where被清除，所以必须再调用一次
+		{
+			$this -> db -> where($where);
+		}
+		if ($autowhere) {eval($autowhere);
+		}//把生成的where从句也执行一边，如果eval产生警告错误可用@eval($autowhere)将其屏蔽。
+		$this -> db -> select('HD.*,U.username');
+		$this -> db -> from($this -> _TABLES['HD'] . " HD");
+		$this -> db -> join($this -> _TABLES['U'] . " U", 'U.id=HD.uid', 'left');
+		if (!is_null($limit['limit'])) {
+			$this -> db -> limit($limit['limit'], (isset($this -> page) ? $this -> page : ''));
+		}
+		if ($count) {//为true时返回数据数，分页及数据集
+			return array('datarows' => $datarows, 'pagination' => $pagination, 'data' => $this -> db -> get());
+		}
+		//为false时直接返回数据集
+		return $this -> db -> get();
+	}
+
+}
+-----------------------------------------------------------------------------------------------------------------------
+控制层中调用
+
+function hotels() {
+	$this -> load -> model('hotel_model');
+	$data['page'] = $this -> config -> item('backendpro_template_admin') . "hotels";
+	$data['module'] = 'restaurants';
+
+	$limit = array('offset' => NULL, 'limit' => 10);
+	$info = $this -> hotel_model -> get_hotels(NULL, $limit, true);
+	//第一个参数可设置where（比如我们想看某个用户的酒店，就设置array('uid'=>'xx')），第二个参数设置一页显示多少条数据，第三个参数表示我需要它给我返回数据集和分页代码
+	$data['info'] = $info['data'];
+	//在前台显示的数据集
+	$data['pagination'] = $info['pagination'];
+	//在前台显示的分页代码
+
+	$this -> load -> view($this -> _container, $data);
+}
+---------------------------------------------------------------------------------------------------------------------
+显示层代码
+
+<ul>
+<?php foreach($info->result() as $row):?>
+<li><?=$row -> name ?></li>
+<?php endforeach;?>
+</ul>
+<div class="pagelist"><?php if ($pagination) print($pagination);?></div>
+-----------------------------------------------------------------------------------------------------------------------
+最终实现，我们创建搜索框，js我就不写了，比如搜索酒店名中包括金花的
+url格式如：http://xxx/hotels/al-name/金花                        
+酒店名是金花的
+http://xxx/hotels/ae-name/金花   
+中文在url中是没法传递的，需要进行两次js编码 encodeURI(encodeURI(name))或php编码urlencode，一次是不行的 
+希望看完此文对你有帮助

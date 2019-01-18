@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ExplorerCanvas Example 1</title>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="canvas3.js"></script>
+<!--[if IE]><script type="text/javascript" src="excanvas_r73.js"></script><![endif]-->
+<script type="text/javascript">
+var D;
+$(function(){
+	document.getElementById('cv').width=800;
+	document.getElementById('cv').height=500;
+	D=new canvas('cv');
+	var img=new Image();
+	var moveFlag=false;
+	D.set({strokeStyle:"#FF0000",fillStyle:"#ff5533"});
+	D.circle(D.width/2,D.height/2,50,true);
+	D.set({strokeStyle:"#FF00FF",fillStyle:"#ff33ff"});
+	D.circle(D.width/3,D.height/3,50,true);
+	D.set({strokeStyle:"#FF9933",fillStyle:"#ff9933"});
+	D.rect(D.width/1.5,D.height/1.5,100,100,true);
+	img.src='Router.png';
+	img.title='Router';
+	img.ip='192.168.1.1';
+	D.image(img,5,5,96,72);
+	img=new Image();
+	img.src='Switch.png';
+	D.image(img,100,100,96/2,72/2);
+	D.set({strokeStyle:"#3399FF"});
+	D.line(100,100,400,400);
+	$(D.cvs).mousedown(function(event){
+		moveFlag=false;
+		var fx=event.clientX; //首次按下位置
+		var fy=event.clientY; //首次按下位置	
+		var dx=fx; //移动时位置
+		var dy=fy; //移动时位置
+		var mx=0; //坐标偏移量
+		var my=0; //坐标偏移量
+		var I=D.isGraph({'x':event.clientX-D.pos.left,'y':event.clientY-D.pos.top});
+		if(I){
+			$(D.cvs).bind('mousemove',function(event){
+				moveFlag=true;
+				D.clear();
+				D.moveGraph({'x':event.clientX-D.pos.left,'y':event.clientY-D.pos.top},I);
+				D.display();
+			});
+		}else{
+			$(D.cvs).bind('mousemove',function(event){
+				D.moveCanvas(event.clientX-dx,event.clientY-dy);
+				dx=event.clientX;
+				dy=event.clientY;
+				mx=fx-dx;
+				my=fy-dy;
+				D.clear();
+				D.display();
+			});
+		}	
+	}).mouseup(function(){
+		$(D.cvs).unbind('mousemove');
+	}).dblclick(function(){
+		var f=xr(D.width,D.height,100);
+		D.circle(f.x,f.y,Math.random()*40+5,true);
+	}).click(function(event){
+		var I=D.isGraph({'x':event.clientX-D.pos.left,'y':event.clientY-D.pos.top});
+		if(I && !moveFlag){
+			D.log(D.play[I]);
+		}
+	});
+	$("input").click(function(){
+		switch(this.value){
+			case '缩 小':
+				D.scaleCanvas(0.9,0.9);
+			break;
+			case '放 大':
+				D.scaleCanvas(1.1,1.1);
+			break;	
+		}
+		D.clear();
+		D.display();
+	});
+	
+});
+function xr(w,h,r){
+	var x=Math.random()*(w);
+	var y=Math.random()*(h);
+	return {'x':x,'y':y};
+}
+</script>
+<style>
+body {
+	background-color:#000000;
+	margin:0;
+	padding:0;
+	text-align:center;
+}
+#cv{
+	background-color:#FFFFFF;
+	/*border:#CCCCCC 15px solid;*/
+}
+</style>
+</head>
+<body>
+<div style="padding-top:10px; color:#FFFFFF;">
+加载不上图片，请按 f5 刷新。
+<br /> 点中 圆，矩形，图片 皆可拖动，点中画布可拖动整个画布。
+<br /> 双击可创建一个随机圆。
+</div>
+<canvas id="cv" width="800" height="500"></canvas>
+<div style="padding-top:10px; color:#FFFFFF;">
+<input type="button" value="缩 小" />
+<input type="button" value="放 大" />
+</div>
+</body>
+</html>
